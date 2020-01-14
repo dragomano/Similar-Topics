@@ -1,0 +1,4 @@
+[center][color=red][size=16pt][b]Similar Topics[/b][/size][/color]
+[color=blue][b][size=10pt]By Bugo[/size][/b][/color]
+
+[color=green]This mod displays a list of similar topics at the bottom of current topic page and when creating new topic.[/color][/center][hr]This work is licensed under a [url=https://opensource.org/licenses/BSD-3-Clause]BSD[/url]
