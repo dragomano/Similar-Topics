@@ -61,7 +61,5 @@ foreach ($initial_settings as $option => $value) {
 }
 updateSettings($vars);
 
-smf_chmod('simtopics.php', 0644);
-
 if (SMF == 'SSI')
 	echo 'Database changes are complete! Please wait...';
