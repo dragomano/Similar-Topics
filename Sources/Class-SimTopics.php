@@ -349,7 +349,7 @@ class SimTopics
 						'subject'   => $row['first_subject'],
 						'preview'   => $row['first_body'],
 						'icon_url'  => $settings[$context['icon_sources'][$row['first_icon']]] . '/post/' . $row['first_icon'] . '.png',
-						'link'      => '<a href="' . $scripturl . '?topic=' . $row['id_topic'] . '.0">' . $row['first_subject'] . '</a>',
+						'link'      => '<a itemprop="relatedLink" href="' . $scripturl . '?topic=' . $row['id_topic'] . '.0">' . $row['first_subject'] . '</a>',
 						'board'     => empty($modSettings['simtopics_only_cur_board']) ? '<a href="' . $scripturl . '?board=' . $row['id_board'] . '.0">' . $row['name'] . '</a>' : '',
 					),
 					'last_post' => array(

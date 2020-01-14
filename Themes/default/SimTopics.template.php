@@ -12,7 +12,7 @@ function template_simtopics()
 			</h3>
 		</div>
 		<div id="messageindex" style="margin-bottom: 0.6em">
-			<div id="topic_container">';
+			<div id="topic_container" itemscope itemtype="http://schema.org/WebPage">';
 
 		foreach ($context['similar_topics'] as $topic) {
 			echo '
