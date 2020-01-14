@@ -1,9 +1,9 @@
 (function($) {
 	function get_simtopics() {
-		let tlist = $("#topic_container");
+		var tlist = $(".table_grid");
 		$(tlist).html(ajax_notification_text);
 
-		let request = $.ajax({
+		var request = $.ajax({
 			type : "POST",
 			dataType : "json",
 			url: simOpt.url + "?action=post",
@@ -14,40 +14,40 @@
 			$(tlist).html("");
 
 			if (e.error == false) {
-				let topics = e.topics;
+				var topics = e.topics;
 
-				if (topics == false) {
-					$(tlist).append("<div class=\"noticebox\">" + simOpt.no_result + "</div>")
-				} else {
+				if (topics == false)
+					$(tlist).append("<div class=\"information\">" + simOpt.no_result + "</div>")
+				else {
 					for (id in topics) {
-						let topic = topics[id];
+						var topic = topics[id];
 
 						if (typeof topic == "object") {
-							let color_class = "windowbg";
+							var color_class = "";
 
 							if (topic.is_sticky == true && topic.locked == true)
-								color_class += ' sticky locked';
+								color_class = 'stickybg locked_sticky';
 							else if (topic.is_sticky == true)
-								color_class += ' sticky';
+								color_class = 'stickybg';
 							else if (topic.locked == true)
-								color_class += ' locked';
+								color_class = 'lockedbg';
+							else
+								color_class = 'windowbg';
 
-							let topic_author = " <strong>" + topic.author + "</strong>";
+							var alt_class = color_class + '2';
 
-							if (topic.id_author != 0)
-								topic_author = " <a href=\"" + simOpt.url + "index.php?action=profile;u=" + topic.id_author + "\">"+ topic.author +  "</a>";
-
-							$(tlist).append("<div class=\"" + color_class + "\" style=\"padding: 0.6em\"><div class=\"info info_block\"><div><div class=\"message_index_title\"><span><a href=\"" + simOpt.url + "index.php?topic=" + topic.id_topic + ".0\">" + topic.subject + "</a></span></div><p class=\"floatleft\">" + simOpt.by + topic_author + "</p><span class=\"floatright\">" + simOpt.board + " <a href=\"" + simOpt.url + "index.php?board=" + topic.id_board + ".0\">" + topic.bname + "</a></span></div></div><div class=\"board_stats floatright\">" + simOpt.replies + ": " + topic.num_replies + "<br>" + simOpt.views + ": " + topic.num_views + "</div></div>");
+							$(tlist).append("<tr><td class=\"icon2 " + color_class + "\" width=\"4%\"><img alt=\"\" src=\"" + smf_images_url + "/post/" + topic.icon + ".gif\" /></td><td class=\"subject " + alt_class + "\"><strong><a href=\"" + simOpt.url + "index.php?topic=" + topic.id_topic + ".0\">" + topic.subject + "</a></strong><p>" + simOpt.by + " <a href=\"" + simOpt.url + "index.php?action=profile;u=" + topic.id_author + "\">"+ topic.author +  "</a><span class=\"floatright\">" + simOpt.board + " <a href=\"" + simOpt.url + "index.php?board=" + topic.id_board + ".0\">" + topic.bname + "</a></span></p></td><td class=\"stats " + color_class + "\" width=\"14%\">" + simOpt.replies + ": " + topic.num_replies + "<br />" + simOpt.views + ": " + topic.num_views + "</td></tr>");
 						}
 					}
 				}
-			} else {
+			} else
 				$(tlist).append("<div class=\"error information\">" + e.msg + "</div>");
-			}
 		});
 	};
 
-	$("#post_header").before("<div class=\"generic_list_wrapper\" style=\"padding: 8px 10px;	border-radius: 6px 6px 0 0\"><h4><span class=\"main_icons frenemy\"></span> " + simOpt.title + "</h4></div><div id=\"messageindex\" style=\"margin-bottom: 0.2em\"><div id=\"topic_container\"></div></div>");
+	$("#post_header").after("<div class=\"title_barIC\"><h4 class=\"titlebg\"><span class=\"ie6_header floatleft\"><img alt=\"\" src=" + smf_default_theme_url + "/images/similar.png" + " class=\"icon\" />" + simOpt.title + "</span></h4></div><div class=\"topic_table\"><table class=\"table_grid\"><tbody></tbody></table></div>");
+
+	$("hr.clear").css("display", "none");
 
 	get_simtopics();
 

@@ -10,8 +10,6 @@ global $user_info, $db_type, $smcFunc;
 if ((SMF == 'SSI') && !$user_info['is_admin'])
 	die('Admin privileges required.');
 
-db_extend('search');
-
 if ($db_type == 'postgresql') {
 	$smcFunc['db_query']('', '
 		DROP INDEX IF EXISTS {db_prefix}messages_st_idx',
@@ -20,14 +18,10 @@ if ($db_type == 'postgresql') {
 		)
 	);
 
-	$language_ftx = $smcFunc['db_search_language']();
-
 	$smcFunc['db_query']('', '
 		CREATE INDEX {db_prefix}messages_st_idx ON {db_prefix}messages
-		USING gin(to_tsvector({string:language}, subject))',
-		array(
-			'language' => $language_ftx
-		)
+		USING gin(to_tsvector(subject))',
+		array()
 	);
 } else {
 	$smcFunc['db_query']('', '
@@ -44,6 +38,17 @@ if ($db_type == 'postgresql') {
 		array()
 	);
 }
+
+$request = $smcFunc['db_query']('', '
+	SHOW INDEX FROM {db_prefix}messages
+	WHERE key_name LIKE "st_idx_subject"'
+);
+if ($smcFunc['db_num_rows']($request) == 0)
+	$smcFunc['db_query']('', '
+		ALTER TABLE {db_prefix}messages
+		ADD FULLTEXT st_idx_subject (subject)',
+		array()
+	);
 
 $initial_settings = array(
 	'simtopics_num_topics'        => 5,

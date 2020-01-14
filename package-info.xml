@@ -3,22 +3,24 @@
 <package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
 	<id>Bugo:SimTopics</id>
 	<name>Similar Topics</name>
-	<version>1.0</version>
+	<version>0.9</version>
 	<type>modification</type>
 
-	<install for="2.1.*">
+	<install for="2.0 - 2.0.99">
 		<readme parsebbc="true" lang="english">readme/english.txt</readme>
+		<readme parsebbc="true" lang="russian-utf8">readme/russian-utf8.txt</readme>
 		<readme parsebbc="true" lang="russian">readme/russian.txt</readme>
 		<require-dir name="Themes" destination="$boarddir" />
 		<require-dir name="Sources" destination="$boarddir" />
-		<hook hook="integrate_pre_load" function="SimTopics::hooks" file="$sourcedir/Class-SimTopics.php" />
 		<code>install.php</code>
+		<code>hooks.php</code>
 		<redirect url="?action=admin;area=modsettings;sa=simtopics" timeout="1000" />
 	</install>
 
-	<uninstall for="2.1.*">
+	<uninstall for="2.0 - 2.0.99">
 		<code>uninstall.php</code>
-		<hook hook="integrate_pre_load" function="SimTopics::hooks" file="$sourcedir/Class-SimTopics.php" reverse="true" />
+		<code>hooks.php</code>
+		<remove-file name="$themedir/images/similar.png" />
 		<remove-file name="$themedir/scripts/simtopics.js" />
 		<remove-file name="$themedir/SimTopics.template.php" />
 		<remove-file name="$sourcedir/Class-SimTopics.php" />

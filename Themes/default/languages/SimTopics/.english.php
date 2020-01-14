@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * .english.php (language file)
+ *
+ * @package Similar Topics
+ * @author Bugo <bugo@dragomano.ru>
+ */
+
 $txt['similar_topics']           = 'Similar topics';
 $txt['simtopics_desc']           = 'Here you can change settings of the Similar Topics mod.';
 $txt['simtopics_settings']       = 'Similar Topics - Settings';

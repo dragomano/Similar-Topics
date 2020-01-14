@@ -1,4 +1,4 @@
 [center][color=red][size=16pt][b]Similar Topics[/b][/size][/color]
 [color=blue][b][size=10pt]By Bugo[/size][/b][/color]
 
-[color=green]Р’С‹РІРѕРґ СЃРїРёСЃРєР° РїРѕС…РѕР¶РёС… С‚РµРј РІРЅРёР·Сѓ СЃС‚СЂР°РЅРёС†С‹ Рё РїСЂРё СЃРѕР·РґР°РЅРёРё РЅРѕРІРѕР№ С‚РµРјС‹.[/color][/center][hr]РњРѕРґ СЂР°СЃРїСЂРѕСЃС‚СЂР°РЅСЏРµС‚СЃСЏ РїРѕ Р»РёС†РµРЅР·РёРё [url=https://opensource.org/licenses/BSD-3-Clause]BSD[/url]
+[color=green]Вывод списка похожих тем внизу страницы и при создании новой темы.[/color][/center][hr]Мод распространяется по лицензии [url=https://opensource.org/licenses/BSD-3-Clause]BSD[/url]
