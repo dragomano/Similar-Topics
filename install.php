@@ -10,6 +10,13 @@ global $user_info, $db_type, $smcFunc;
 if ((SMF == 'SSI') && !$user_info['is_admin'])
 	die('Admin privileges required.');
 
+db_extend('extra');
+
+$version = $smcFunc['db_get_version']();
+
+if (version_compare($version, '5.6', '<'))
+	die('This mod needs MySQL 5.6 or greater. You will not be able to install/use this mod, contact your host and ask for a database engine upgrade.');
+
 db_extend('search');
 
 if ($db_type == 'postgresql') {
