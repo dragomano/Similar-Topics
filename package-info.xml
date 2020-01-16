@@ -3,7 +3,7 @@
 <package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
 	<id>Bugo:SimTopics</id>
 	<name>Similar Topics</name>
-	<version>0.9.1</version>
+	<version>0.9.2</version>
 	<type>modification</type>
 
 	<install for="2.0 - 2.0.99">

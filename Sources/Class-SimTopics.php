@@ -9,7 +9,7 @@
  * @copyright 2012-2020 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 0.9.1
+ * @version 0.9.2
  */
 
 if (!defined('SMF'))
@@ -143,15 +143,14 @@ class SimTopics
 
 		if (empty($query)) {
 			$output['msg']   = $txt['simtopics_no_subject'];
+			$output['count'] = $count;
 			$output['error'] = true;
 		} else {
-			$search_string = $smcFunc['db_escape_string'](implode(' ', $query), $db_connection);
+			$search_string = $smcFunc['db_escape_string'](implode(' ', $query));
 			$title = self::getCorrectTitle($search_string);
 		}
 
 		if (!empty($count) && !empty(ltrim($title, '+'))) {
-			$search_string = implode(' ', $query);
-
 			$result = $smcFunc['db_query']('', '
 				SELECT DISTINCT
 					t.id_topic, t.id_board, t.is_sticky, t.locked, t.id_member_started as id_author, t.num_replies, t.num_views,
@@ -163,7 +162,7 @@ class SimTopics
 					LEFT JOIN {db_prefix}boards AS b ON b.id_board = t.id_board
 					LEFT JOIN {db_prefix}messages AS mf ON mf.id_msg = t.id_first_msg
 				WHERE m.approved = {int:is_active}' . (!empty($modSettings['simtopics_only_cur_board']) ? '
-					AND t.id_board = {int:current_board}' : '') . (!empty($ignore_boards) ? '
+					AND t.id_board = {int:current_board}' : '') . (!empty($context['simtopics_ignored_boards']) ? '
 					AND b.id_board NOT IN ({array_int:ignore_boards})' : '') . '
 					AND {query_wanna_see_board}
 					AND {query_see_board}' . ($db_type == 'postgresql' ? '
@@ -199,7 +198,7 @@ class SimTopics
 	 */
 	public static function checkTopicsOnDisplay()
 	{
-		global $modSettings, $context, $topicinfo, $user_info, $options, $smcFunc, $db_type, $scripturl, $settings;
+		global $context, $topicinfo, $user_info, $modSettings, $options, $smcFunc, $db_type, $scripturl, $settings;
 
 		if (!allowedTo('simtopics_view') || WIRELESS || isset($_REQUEST['xml']) || !empty($context['is_new_topic']))
 			return;
@@ -259,7 +258,7 @@ class SimTopics
 						LEFT JOIN {db_prefix}log_mark_read AS lmr ON (lmr.id_board = {int:current_board} AND lmr.id_member = {int:current_member})') . '
 					WHERE t.id_topic != {int:current_topic}
 						AND t.approved = {int:is_approved}' . (!empty($modSettings['simtopics_only_cur_board']) ? '
-						AND t.id_board = {int:current_board}' : '') . (!empty($ignore_boards) ? '
+						AND t.id_board = {int:current_board}' : '') . (!empty($context['simtopics_ignored_boards']) ? '
 						AND t.id_board NOT IN ({array_int:ignore_boards})' : '') . '
 						AND {query_wanna_see_board}
 						AND {query_see_board}' . ($db_type == 'postgresql' ? '
