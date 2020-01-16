@@ -9,7 +9,7 @@
  * @copyright 2012-2020 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 0.9
+ * @version 0.9.1
  */
 
 if (!defined('SMF'))
@@ -144,9 +144,12 @@ class SimTopics
 		if (empty($query)) {
 			$output['msg']   = $txt['simtopics_no_subject'];
 			$output['error'] = true;
+		} else {
+			$search_string = $smcFunc['db_escape_string'](implode(' ', $query), $db_connection);
+			$title = self::getCorrectTitle($search_string);
 		}
 
-		if ($output['error'] == false && !empty($count)) {
+		if (!empty($count) && !empty(ltrim($title, '+'))) {
 			$search_string = implode(' ', $query);
 
 			$result = $smcFunc['db_query']('', '
@@ -169,7 +172,7 @@ class SimTopics
 				ORDER BY score DESC
 				LIMIT {int:limit}',
 				array(
-					'title'         => self::getCorrectTitle($search_string),
+					'title'         => $title,
 					'is_active'     => 1,
 					'current_board' => $board,
 					'ignore_boards' => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
@@ -234,81 +237,87 @@ class SimTopics
 				}
 			}
 
-			$request = $smcFunc['db_query']('', '
-				SELECT
-					t.id_topic, t.id_board, t.num_views, t.num_replies, t.is_sticky, t.locked, t.id_poll, t.id_first_msg, t.id_last_msg,
-					ml.subject AS last_subject, ml.id_member AS last_id_member, ml.poster_time AS last_poster_time, ml.id_msg_modified,
-					mf.subject AS first_subject, mf.id_member AS first_id_member, mf.poster_time AS first_poster_time, mf.icon, b.name,
-					' . ($user_info['is_guest'] ? '0' : 'IFNULL(lt.id_msg, IFNULL(lmr.id_msg, -1)) + 1') . ' AS new_from,
-					IFNULL(meml.real_name, ml.poster_name) AS last_poster_name, IFNULL(memf.real_name, mf.poster_name) AS poster_name,' . ($db_type == 'postgresql' ? '
-					ts_rank_cd(to_tsvector(mf.subject), to_tsquery({string:title}))' : '
-					MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . 'AS score
-				FROM {db_prefix}topics AS t
-					INNER JOIN {db_prefix}messages AS ml ON (ml.id_msg = t.id_last_msg)
-					INNER JOIN {db_prefix}messages AS mf ON (mf.id_msg = t.id_first_msg)
-					LEFT JOIN {db_prefix}boards AS b ON (b.id_board = t.id_board)
-					LEFT JOIN {db_prefix}members AS meml ON (meml.id_member = ml.id_member)
-					LEFT JOIN {db_prefix}members AS memf ON (memf.id_member = mf.id_member)' . ($user_info['is_guest'] ? '' : '
-					LEFT JOIN {db_prefix}log_topics AS lt ON (lt.id_topic = t.id_topic AND lt.id_member = {int:current_member})
-					LEFT JOIN {db_prefix}log_mark_read AS lmr ON (lmr.id_board = {int:current_board} AND lmr.id_member = {int:current_member})') . '
-				WHERE t.id_topic != {int:current_topic}
-					AND t.approved = {int:is_approved}' . (!empty($modSettings['simtopics_only_cur_board']) ? '
-					AND t.id_board = {int:current_board}' : '') . (!empty($ignore_boards) ? '
-					AND t.id_board NOT IN ({array_int:ignore_boards})' : '') . '
-					AND {query_wanna_see_board}
-					AND {query_see_board}' . ($db_type == 'postgresql' ? '
-					AND to_tsvector(mf.subject) @@ to_tsquery({string:title})' : '
-					AND MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . '
-				ORDER BY ' . $sort_type . '
-				LIMIT {int:limit}',
-				array(
-					'title'          => self::getCorrectTitle(isset($topicinfo['subject']) ? $topicinfo['subject'] : $context['subject']),
-					'current_topic'  => $context['current_topic'],
-					'current_board'  => $context['current_board'],
-					'is_approved'    => 1,
-					'current_member' => $user_info['id'],
-					'ignore_boards'  => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
-					'limit'          => !empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
-				)
-			);
+			$title = self::getCorrectTitle(isset($topicinfo['subject']) ? $topicinfo['subject'] : $context['subject']);
 
-			while ($row = $smcFunc['db_fetch_assoc']($request)) {
-				censorText($row['first_subject']);
-
-				if ($row['id_first_msg'] == $row['id_last_msg'])
-					$row['last_subject'] = $row['first_subject'];
-				else
-					censorText($row['last_subject']);
-
-				$context['similar_topics'][] = array(
-					'id' => $row['id_topic'],
-					'first_post' => array(
-						'id' => $row['id_first_msg'],
-						'member_link' => !empty($row['first_id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['first_id_member'] . '">' . $row['poster_name'] . '</a>' : $row['poster_name'],
-						'time' => timeformat($row['first_poster_time']),
-						'subject' => $row['first_subject'],
-						'icon_url' => $settings['images_url'] . '/post/' . $row['icon'] . '.gif',
-						'link' => '<a itemprop="relatedLink" href="' . $scripturl . '?topic=' . $row['id_topic'] . '.0">' . $row['first_subject'] . '</a>',
-						'board' => empty($modSettings['simtopics_only_cur_board']) ? '<a href="' . $scripturl . '?board=' . $row['id_board'] . '.0">' . $row['name'] . '</a>' : '',
-					),
-					'last_post' => array(
-						'id' => $row['id_last_msg'],
-						'member_link' => !empty($row['last_id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['last_id_member'] . '">' . $row['last_poster_name'] . '</a>' : $row['last_poster_name'],
-						'time' => timeformat($row['last_poster_time']),
-						'subject' => $row['last_subject'],
-						'href' => $scripturl . '?topic=' . $row['id_topic'] . ($user_info['is_guest'] ? ('.' . (!empty($options['view_newest_first']) ? 0 : ((int) (($row['num_replies']) / $context['pageindex_multiplier'])) * $context['pageindex_multiplier']) . '#msg' . $row['id_last_msg']) : (($row['num_replies'] == 0 ? '.0' : '.msg' . $row['id_last_msg']) . '#new')),
-					),
-					'is_sticky' => !empty($modSettings['enableStickyTopics']) && !empty($row['is_sticky']),
-					'is_locked' => !empty($row['locked']),
-					'views' => $row['num_views'],
-					'replies' => $row['num_replies'],
-					'new' => $row['new_from'] <= $row['id_msg_modified'],
-					'new_href' => $scripturl . '?topic=' . $row['id_topic'] . '.msg' . $row['new_from'] . '#new',
-					'new_from' => $row['new_from']
+			if (!empty(ltrim($title, '+'))) {
+				$request = $smcFunc['db_query']('', '
+					SELECT
+						t.id_topic, t.id_board, t.num_views, t.num_replies, t.is_sticky, t.locked, t.id_poll, t.id_first_msg, t.id_last_msg,
+						ml.subject AS last_subject, ml.id_member AS last_id_member, ml.poster_time AS last_poster_time, ml.id_msg_modified,
+						mf.subject AS first_subject, mf.id_member AS first_id_member, mf.poster_time AS first_poster_time, mf.icon, b.name,
+						' . ($user_info['is_guest'] ? '0' : 'IFNULL(lt.id_msg, IFNULL(lmr.id_msg, -1)) + 1') . ' AS new_from,
+						IFNULL(meml.real_name, ml.poster_name) AS last_poster_name, IFNULL(memf.real_name, mf.poster_name) AS poster_name,' . ($db_type == 'postgresql' ? '
+						ts_rank_cd(to_tsvector(mf.subject), to_tsquery({string:title}))' : '
+						MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . 'AS score
+					FROM {db_prefix}topics AS t
+						INNER JOIN {db_prefix}messages AS ml ON (ml.id_msg = t.id_last_msg)
+						INNER JOIN {db_prefix}messages AS mf ON (mf.id_msg = t.id_first_msg)
+						LEFT JOIN {db_prefix}boards AS b ON (b.id_board = t.id_board)
+						LEFT JOIN {db_prefix}members AS meml ON (meml.id_member = ml.id_member)
+						LEFT JOIN {db_prefix}members AS memf ON (memf.id_member = mf.id_member)' . ($user_info['is_guest'] ? '' : '
+						LEFT JOIN {db_prefix}log_topics AS lt ON (lt.id_topic = t.id_topic AND lt.id_member = {int:current_member})
+						LEFT JOIN {db_prefix}log_mark_read AS lmr ON (lmr.id_board = {int:current_board} AND lmr.id_member = {int:current_member})') . '
+					WHERE t.id_topic != {int:current_topic}
+						AND t.approved = {int:is_approved}' . (!empty($modSettings['simtopics_only_cur_board']) ? '
+						AND t.id_board = {int:current_board}' : '') . (!empty($ignore_boards) ? '
+						AND t.id_board NOT IN ({array_int:ignore_boards})' : '') . '
+						AND {query_wanna_see_board}
+						AND {query_see_board}' . ($db_type == 'postgresql' ? '
+						AND to_tsvector(mf.subject) @@ to_tsquery({string:title})' : '
+						AND MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . '
+					ORDER BY ' . $sort_type . '
+					LIMIT {int:limit}',
+					array(
+						'title'          => $title,
+						'current_topic'  => $context['current_topic'],
+						'current_board'  => $context['current_board'],
+						'is_approved'    => 1,
+						'current_member' => $user_info['id'],
+						'ignore_boards'  => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
+						'limit'          => !empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
+					)
 				);
-			}
 
-			$smcFunc['db_free_result']($request);
+				while ($row = $smcFunc['db_fetch_assoc']($request)) {
+					censorText($row['first_subject']);
+
+					if ($row['id_first_msg'] == $row['id_last_msg'])
+						$row['last_subject'] = $row['first_subject'];
+					else
+						censorText($row['last_subject']);
+
+					$context['similar_topics'][] = array(
+						'id' => $row['id_topic'],
+						'first_post' => array(
+							'id' => $row['id_first_msg'],
+							'member_link' => !empty($row['first_id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['first_id_member'] . '">' . $row['poster_name'] . '</a>' : $row['poster_name'],
+							'time' => timeformat($row['first_poster_time']),
+							'subject' => $row['first_subject'],
+							'icon_url' => $settings['images_url'] . '/post/' . $row['icon'] . '.gif',
+							'link' => '<a itemprop="relatedLink" href="' . $scripturl . '?topic=' . $row['id_topic'] . '.0">' . $row['first_subject'] . '</a>',
+							'board' => empty($modSettings['simtopics_only_cur_board']) ? '<a href="' . $scripturl . '?board=' . $row['id_board'] . '.0">' . $row['name'] . '</a>' : '',
+						),
+						'last_post' => array(
+							'id' => $row['id_last_msg'],
+							'member_link' => !empty($row['last_id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['last_id_member'] . '">' . $row['last_poster_name'] . '</a>' : $row['last_poster_name'],
+							'time' => timeformat($row['last_poster_time']),
+							'subject' => $row['last_subject'],
+							'href' => $scripturl . '?topic=' . $row['id_topic'] . ($user_info['is_guest'] ? ('.' . (!empty($options['view_newest_first']) ? 0 : ((int) (($row['num_replies']) / $context['pageindex_multiplier'])) * $context['pageindex_multiplier']) . '#msg' . $row['id_last_msg']) : (($row['num_replies'] == 0 ? '.0' : '.msg' . $row['id_last_msg']) . '#new')),
+						),
+						'is_sticky' => !empty($modSettings['enableStickyTopics']) && !empty($row['is_sticky']),
+						'is_locked' => !empty($row['locked']),
+						'views' => $row['num_views'],
+						'replies' => $row['num_replies'],
+						'new' => $row['new_from'] <= $row['id_msg_modified'],
+						'new_href' => $scripturl . '?topic=' . $row['id_topic'] . '.msg' . $row['new_from'] . '#new',
+						'new_from' => $row['new_from']
+					);
+				}
+
+				$smcFunc['db_free_result']($request);
+			} else {
+				$context['similar_topics'] = [];
+			}
 
 			cache_put_data('similar_topics-' . $context['current_topic'] . '-u' . $user_info['id'], $context['similar_topics'], $modSettings['simtopics_cache_int']);
 		}
