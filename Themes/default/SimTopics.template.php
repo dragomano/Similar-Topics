@@ -21,49 +21,48 @@ function template_simtopics()
 			if (!empty($context['simtopics_displayed_columns'][1]['show'])) {
 				echo '
 					<div class="board_icon">
-						<img src="', $topic['first_post']['icon_url'], '" alt="">
+						<img src="', $topic['first_post']['icon_url'], '" alt="', $topic['id'], '">
 					</div>';
 			}
 
 			if (!empty($context['simtopics_displayed_columns'][2]['show'])) {
 				echo '
 					<div class="info info_block">
-						<div>';
+						<div class="icons floatright">';
 
-				echo '
-							<div class="icons floatright">';
 				if ($topic['is_locked'])
 					echo '
-								<span class="main_icons lock"></span>';
+							<span class="main_icons lock"></span>';
+
 				if ($topic['is_sticky'])
 					echo '
-								<span class="main_icons sticky"></span>';
+							<span class="main_icons sticky"></span>';
+
 				if ($topic['is_redirect'])
 					echo '
-								<span class="main_icons move"></span>';
+							<span class="main_icons move"></span>';
+
 				if ($topic['is_poll'])
 					echo '
-								<span class="main_icons poll"></span>';
-				echo '
-							</div>';
+							<span class="main_icons poll"></span>';
 
 				echo '
-							<div class="message_index_title">
-								', $topic['new'] && $context['user']['is_logged'] ? '<a href="' . $topic['new_href'] . '" id="newicon' . $topic['first_post']['id'] . '"><span class="new_posts">' . $txt['new'] . '</span></a>' : '', '
-								<span class="preview', $topic['is_sticky'] ? ' bold_text' : '', '" title="', $topic[(empty($modSettings['message_index_preview_first']) ? 'last_post' : 'first_post')]['preview'], '">
-									<span id="msg_', $topic['first_post']['id'], '">', $topic['first_post']['link'], '</span>
-								</span>
-							</div>
-							<p class="floatleft">', $txt['started_by'], ' ', $topic['first_post']['member']['link'], '</p>
-							<br class="clear">
 						</div>
+						<div class="message_index_title">
+							', $topic['new'] && $context['user']['is_logged'] ? '<a href="' . $topic['new_href'] . '" id="newicon' . $topic['first_post']['id'] . '"><span class="new_posts">' . $txt['new'] . '</span></a>' : '', '
+							<span class="preview', $topic['is_sticky'] ? ' bold_text' : '', '" title="', $topic[(empty($modSettings['message_index_preview_first']) ? 'last_post' : 'first_post')]['preview'], '">
+								<span id="msg_', $topic['first_post']['id'], '">', $topic['first_post']['link'], '</span>
+							</span>
+						</div>
+						<p class="floatleft">', $txt['started_by'], ' ', $topic['first_post']['member']['link'], '</p>
+						<br class="clear">
 					</div>';
 			}
 
 			if (!empty($context['simtopics_displayed_columns'][3]['show']))
 				echo '
 					<div class="board_stats centertext">
-						<p>', $topic['replies'], ' ', $txt['replies'], '<br>', $topic['views'], ' ', $txt['views'], '</p>
+						<p>', $txt['replies'], ': ', $topic['replies'], '<br>', $txt['views'], ': ', $topic['views'], '</p>
 					</div>';
 
 			if (!empty($context['simtopics_displayed_columns'][4]['show']))

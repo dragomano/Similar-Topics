@@ -9,7 +9,7 @@
  * @copyright 2012-2020 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.0.1
+ * @version 1.1
  */
 
 if (!defined('SMF'))
@@ -24,11 +24,11 @@ class SimTopics
 	 */
 	public static function hooks()
 	{
-		add_integration_function('integrate_load_theme', 'SimTopics::loadTheme', false, __FILE__);
-		add_integration_function('integrate_menu_buttons', 'SimTopics::menuButtons', false, __FILE__);
-		add_integration_function('integrate_load_permissions', 'SimTopics::loadPermissions', false, __FILE__);
-		add_integration_function('integrate_admin_areas', 'SimTopics::adminAreas', false, __FILE__);
-		add_integration_function('integrate_modify_modifications', 'SimTopics::modifyModifications', false, __FILE__);
+		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme', false, __FILE__);
+		add_integration_function('integrate_menu_buttons', __CLASS__ . '::menuButtons', false, __FILE__);
+		add_integration_function('integrate_load_permissions', __CLASS__ . '::loadPermissions', false, __FILE__);
+		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas', false, __FILE__);
+		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications', false, __FILE__);
 	}
 
 	/**
@@ -112,10 +112,10 @@ class SimTopics
 
 		if ($db_type == 'postgresql') {
 			// Переводим массив в строку с разделителем «|» между словами (означает «ИЛИ»; если нужно «И» - поставить «&»)
-			$correct_title = implode(' | ', array_filter($correct_title));
+			$correct_title = trim(urldecode(implode(' | ', array_filter($correct_title))));
 		} else {
 			// Преобразуем массив в строку для использования в запросе MATCH AGAINST
-			$correct_title = '+' . implode(' ', $correct_title);
+			$correct_title = '+' . trim(urldecode(implode(' ', $correct_title)));
 		}
 
 		return $smcFunc['strtolower']($correct_title);
@@ -465,11 +465,9 @@ class SimTopics
 			array('select', 'simtopics_sorting', $txt['simtopics_sorting_variants']),
 			array('int', 'simtopics_cache_int', 'postinput' => $txt['simtopics_ci_post']),
 			array('boards', 'simtopics_ignored_boards'),
-
 			array('title', 'edit_permissions'),
 			array('permissions', 'simtopics_view'),
 			array('permissions', 'simtopics_post'),
-
 			array('title', 'simtopics_displayed_columns'),
 			array('callback', 'displayed_columns')
 		);
