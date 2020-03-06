@@ -46,17 +46,6 @@ if ($db_type == 'postgresql') {
 	);
 }
 
-$request = $smcFunc['db_query']('', '
-	SHOW INDEX FROM {db_prefix}messages
-	WHERE key_name LIKE "st_idx_subject"'
-);
-if ($smcFunc['db_num_rows']($request) == 0)
-	$smcFunc['db_query']('', '
-		ALTER TABLE {db_prefix}messages
-		ADD FULLTEXT st_idx_subject (subject)',
-		array()
-	);
-
 $initial_settings = array(
 	'simtopics_num_topics'        => 5,
 	'simtopics_only_cur_board'    => 1,
