@@ -267,7 +267,7 @@ class SimTopics
 						AND {query_see_board}' . ($db_type == 'postgresql' ? '
 						AND to_tsvector(mf.subject) @@ to_tsquery({string:language}, {string:title})' : '
 						AND MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . '
-					ORDER BY ' . $sort_type . '
+					ORDER BY {raw:sort_type}
 					LIMIT {int:limit}',
 					array(
 						'language'       => $db_type == 'postgresql' ? $smcFunc['db_search_language']() : '',
@@ -277,6 +277,7 @@ class SimTopics
 						'is_approved'    => 1,
 						'current_member' => $user_info['id'],
 						'ignore_boards'  => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
+						'sort_type'      => $sort_type,
 						'limit'          => !empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
 					)
 				);
