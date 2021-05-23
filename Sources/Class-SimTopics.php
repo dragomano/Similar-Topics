@@ -6,10 +6,10 @@
  * @package Similar Topics
  * @link https://dragomano.ru/mods/similar-topics
  * @author Bugo <bugo@dragomano.ru>
- * @copyright 2012-2020 Bugo
+ * @copyright 2012-2021 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.1
+ * @version 1.1.1
  */
 
 if (!defined('SMF'))
@@ -115,7 +115,7 @@ class SimTopics
 			$correct_title = trim(urldecode(implode(' | ', array_filter($correct_title))));
 		} else {
 			// Преобразуем массив в строку для использования в запросе MATCH AGAINST
-			$correct_title = '+' . trim(urldecode(implode(' ', $correct_title)));
+			$correct_title = trim(urldecode(implode('* ', $correct_title))) . '*';
 		}
 
 		return $smcFunc['strtolower']($correct_title);
