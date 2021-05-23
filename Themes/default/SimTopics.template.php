@@ -27,7 +27,7 @@ function template_simtopics()
 
 			if (!empty($context['simtopics_displayed_columns'][2]['show'])) {
 				echo '
-					<div class="info info_block">
+					<div class="info info_block"', empty($context['simtopics_displayed_columns'][1]['show']) ? ' style="padding-left: 20px"' : '', '>
 						<div class="icons floatright">';
 
 				if ($topic['is_locked'])
@@ -68,7 +68,9 @@ function template_simtopics()
 			if (!empty($context['simtopics_displayed_columns'][4]['show']))
 				echo '
 					<div class="lastpost">
-						<p>', sprintf($txt['last_post_topic'], '<a href="' . $topic['last_post']['href'] . '">' . $topic['last_post']['time'] . '</a>', $topic['last_post']['member']['link']), '</p>
+						<p>
+							', sprintf($txt['last_post_topic'], '<a href="', $topic['last_post']['href'], '">', $topic['last_post']['time'], '</a>', $topic['last_post']['member']['link']), '
+						</p>
 					</div>';
 
 			echo '
