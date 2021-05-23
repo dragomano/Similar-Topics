@@ -1,7 +1,7 @@
 <?php
 
 $txt['similar_topics']           = 'Benzer Başlıklar';
-$txt['simtopics_desc']           = 'Benzer Başlıklar eklenti ayarlarını buradan değiştirebilirsiniz.';
+$txt['simtopics_desc']           = 'Benzer Başlıklar eklenti ayarlarını buradan değiştirebilirsiniz. You can also buy <a class="bbc_link" href="https://ko-fi.com/U7U41XD2G">a cup of coffee</a> for the developer.';
 $txt['simtopics_settings']       = 'Benzer Başlıklar Eklenti Ayarları';
 $txt['simtopics_num_topics']     = 'Gösterilecek maksimum başlık sayısı';
 $txt['simtopics_nt_desc']        = 'Modu devre dışı bırakmak için 0 girin';
