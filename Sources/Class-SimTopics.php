@@ -148,7 +148,7 @@ class SimTopics
 			$title = self::getCorrectTitle($search_string);
 		}
 
-		if (!empty($count) && !empty(ltrim($title, '+'))) {
+		if (!empty($count) && !empty(ltrim($title, '*'))) {
 			db_extend('search');
 
 			$result = $smcFunc['db_query']('', '
@@ -239,7 +239,7 @@ class SimTopics
 
 			$title = self::getCorrectTitle($context['subject']);
 
-			if (!empty(ltrim($title, '+'))) {
+			if (!empty(ltrim($title, '*'))) {
 				db_extend('search');
 
 				$request = $smcFunc['db_query']('substring', '
