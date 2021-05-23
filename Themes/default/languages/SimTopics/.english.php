@@ -8,7 +8,7 @@
  */
 
 $txt['similar_topics']           = 'Similar topics';
-$txt['simtopics_desc']           = 'Here you can change settings of the Similar Topics mod.';
+$txt['simtopics_desc']           = 'Here you can change settings of the Similar Topics mod. You can also buy <a class="bbc_link" href="https://ko-fi.com/U7U41XD2G">a cup of coffee</a> for the developer.';
 $txt['simtopics_settings']       = 'Similar Topics - Settings';
 $txt['simtopics_num_topics']     = 'Maximum topics to show';
 $txt['simtopics_nt_desc']        = 'Set 0 to disable mod.';

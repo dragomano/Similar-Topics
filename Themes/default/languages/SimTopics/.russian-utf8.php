@@ -8,7 +8,7 @@
  */
 
 $txt['similar_topics']           = 'Похожие темы';
-$txt['simtopics_desc']           = 'Здесь можно изменить настройки мода Similar Topics.';
+$txt['simtopics_desc']           = 'Здесь можно изменить настройки мода Similar Topics. А ещё можно угостить разработчика <a class="bbc_link" href="https://ko-fi.com/U7U41XD2G">чашкой кофе</a> или <a class="bbc_link" href="https://qiwi.com/n/DRAGOMANO">кусочком киви</a>.';
 $txt['simtopics_settings']       = 'Настройки мода похожих тем';
 $txt['simtopics_num_topics']     = 'Максимальное количество выводимых тем';
 $txt['simtopics_nt_desc']        = 'Укажите 0 для отключения мода.';
