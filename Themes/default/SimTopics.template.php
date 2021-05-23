@@ -41,7 +41,7 @@ function template_simtopics()
 
 			if (!empty($context['simtopics_displayed_columns'][2]['show'])) {
 				echo '
-						<td class="subject ', $alternate_class, '">
+						<td class="subject ', $alternate_class, '"', empty($context['simtopics_displayed_columns'][1]['show']) ? ' style="padding-left: 20px"' : '', '>
 							', $topic['is_sticky'] ? '<strong>' : '', $topic['first_post']['link'], $topic['is_sticky'] ? '</strong>' : '';
 
 				if ($topic['new'] && $context['user']['is_logged'])

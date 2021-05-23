@@ -6,10 +6,10 @@
  * @package Similar Topics
  * @link https://dragomano.ru/mods/similar-topics
  * @author Bugo <bugo@dragomano.ru>
- * @copyright 2012-2020 Bugo
+ * @copyright 2012-2021 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.0
+ * @version 1.0.1
  */
 
 if (!defined('SMF'))
@@ -116,7 +116,7 @@ class SimTopics
 			$correct_title = trim(urldecode(implode(' | ', array_filter($correct_title))));
 		} else {
 			// Преобразуем массив в строку для использования в запросе MATCH AGAINST
-			$correct_title = '+' . trim(urldecode(implode(' ', $correct_title)));
+			$correct_title = trim(urldecode(implode('* ', $correct_title))) . '*';
 		}
 
 		return $smcFunc['strtolower']($correct_title);
@@ -150,7 +150,7 @@ class SimTopics
 			$title = self::getCorrectTitle($search_string);
 		}
 
-		if (!empty($count) && !empty(ltrim($title, '+'))) {
+		if (!empty($count) && !empty(ltrim($title, '*'))) {
 			$result = $smcFunc['db_query']('', '
 				SELECT DISTINCT
 					t.id_topic, t.id_board, t.is_sticky, t.locked, t.id_member_started as id_author, t.num_replies, t.num_views,
@@ -238,7 +238,7 @@ class SimTopics
 
 			$title = self::getCorrectTitle(isset($topicinfo['subject']) ? $topicinfo['subject'] : $context['subject']);
 
-			if (!empty(ltrim($title, '+'))) {
+			if (!empty(ltrim($title, '*'))) {
 				$request = $smcFunc['db_query']('', '
 					SELECT
 						t.id_topic, t.id_board, t.num_views, t.num_replies, t.is_sticky, t.locked, t.id_poll, t.id_first_msg, t.id_last_msg,
@@ -264,7 +264,7 @@ class SimTopics
 						AND {query_see_board}' . ($db_type == 'postgresql' ? '
 						AND to_tsvector(mf.subject) @@ to_tsquery({string:title})' : '
 						AND MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . '
-					ORDER BY ' . $sort_type . '
+					ORDER BY {raw:sort_type}
 					LIMIT {int:limit}',
 					array(
 						'title'          => $title,
@@ -273,6 +273,7 @@ class SimTopics
 						'is_approved'    => 1,
 						'current_member' => $user_info['id'],
 						'ignore_boards'  => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
+						'sort_type'      => $sort_type,
 						'limit'          => !empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
 					)
 				);
