@@ -9,7 +9,7 @@
  * @copyright 2012-2021 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.1.1
+ * @version 1.1.2
  */
 
 if (!defined('SMF'))
@@ -348,7 +348,7 @@ class SimTopics
 								'name'     => $row['first_display_name'],
 								'id'       => $row['first_id_member'],
 								'href'     => !empty($row['first_id_member']) ? $scripturl . '?action=profile;u=' . $row['first_id_member'] : '',
-								'link'     => !empty($row['first_id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['first_id_member'] . '" title="' . $txt['profile_of'] . ' ' . $row['first_display_name'] . '" class="preview">' . $row['first_display_name'] . '</a>': $row['first_display_name']
+								'link'     => !empty($row['first_id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['first_id_member'] . '" title="' . (isset($txt['profile_of']) ? ($txt['profile_of'] . ' ' . $row['first_display_name']) : sprintf($txt['view_profile_of_username'], $row['first_display_name'])) . '" class="preview">' . $row['first_display_name'] . '</a>': $row['first_display_name']
 							),
 							'time'      => timeformat($row['first_poster_time']),
 							'subject'   => $row['first_subject'],
