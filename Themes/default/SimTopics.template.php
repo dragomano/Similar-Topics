@@ -30,21 +30,25 @@ function template_simtopics()
 					<div class="info info_block"', empty($context['simtopics_displayed_columns'][1]['show']) ? ' style="padding-left: 20px"' : '', '>
 						<div class="icons floatright">';
 
-				if ($topic['is_locked'])
+				if ($topic['is_locked']) {
 					echo '
 							<span class="main_icons lock"></span>';
+				}
 
-				if ($topic['is_sticky'])
+				if ($topic['is_sticky']) {
 					echo '
 							<span class="main_icons sticky"></span>';
+				}
 
-				if ($topic['is_redirect'])
+				if ($topic['is_redirect']) {
 					echo '
 							<span class="main_icons move"></span>';
+				}
 
-				if ($topic['is_poll'])
+				if ($topic['is_poll']) {
 					echo '
 							<span class="main_icons poll"></span>';
+				}
 
 				echo '
 						</div>
@@ -59,19 +63,19 @@ function template_simtopics()
 					</div>';
 			}
 
-			if (!empty($context['simtopics_displayed_columns'][3]['show']))
+			if (!empty($context['simtopics_displayed_columns'][3]['show'])) {
 				echo '
 					<div class="board_stats centertext">
 						<p>', $txt['replies'], ': ', $topic['replies'], '<br>', $txt['views'], ': ', $topic['views'], '</p>
 					</div>';
+			}
 
-			if (!empty($context['simtopics_displayed_columns'][4]['show']))
+			if (!empty($context['simtopics_displayed_columns'][4]['show'])) {
 				echo '
 					<div class="lastpost">
-						<p>
-							', sprintf($txt['last_post_topic'], '<a href="', $topic['last_post']['href'], '">', $topic['last_post']['time'], '</a>', $topic['last_post']['member']['link']), '
-						</p>
+						', sprintf($txt['last_post_topic'], '<a href="' . $topic['last_post']['href'] . '">' . $topic['last_post']['time'] . '</a>', $topic['last_post']['member']['link']), '
 					</div>';
+			}
 
 			echo '
 				</div>';

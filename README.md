@@ -2,7 +2,7 @@
 * **Author:** Bugo [dragomano.ru](https://dragomano.ru/mods/similar-topics)
 * **License:** [BSD 3](https://github.com/dragomano/Similar-Topics/blob/master/LICENSE)
 * **Compatible with:** SMF 2.1 RC3+ / PHP 7.2+
-* **Tested on:** PHP 7.3.29 / MariaDB 10.5.10
+* **Tested on:** PHP 7.4.21 / MariaDB 10.5.10
 * **Hooks only:** Yes
 * **Languages:** English, French, Russian, Spanish, Turkish
 
