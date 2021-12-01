@@ -1,8 +1,12 @@
 # Similar Topics
+[![SMF 2.1](https://img.shields.io/badge/SMF-2.1-ed6033.svg?style=flat)](https://github.com/SimpleMachines/SMF2.1)
+![License](https://img.shields.io/github/license/dragomano/similar-topics)
+![PHP](https://img.shields.io/badge/PHP-^7.2-blue.svg?style=flat)
+
 * **Author:** Bugo [dragomano.ru](https://dragomano.ru/mods/similar-topics)
 * **License:** [BSD 3](https://github.com/dragomano/Similar-Topics/blob/master/LICENSE)
 * **Compatible with:** SMF 2.1 RC3+ / PHP 7.2+
-* **Tested on:** PHP 7.4.21 / MariaDB 10.5.10
+* **Tested on:** PHP 7.4.26 / MariaDB 10.6.5
 * **Hooks only:** Yes
 * **Languages:** English, French, Russian, Spanish, Turkish
 
