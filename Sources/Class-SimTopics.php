@@ -9,7 +9,7 @@
  * @copyright 2012-2021 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.1.3
+ * @version 1.1.4
  */
 
 if (!defined('SMF'))
@@ -22,13 +22,13 @@ class SimTopics
 	 *
 	 * @return void
 	 */
-	public static function hooks()
+	public function hooks()
 	{
-		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme', false, __FILE__);
-		add_integration_function('integrate_menu_buttons', __CLASS__ . '::menuButtons', false, __FILE__);
-		add_integration_function('integrate_load_permissions', __CLASS__ . '::loadPermissions', false, __FILE__);
-		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas', false, __FILE__);
-		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications', false, __FILE__);
+		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
+		add_integration_function('integrate_menu_buttons', __CLASS__ . '::menuButtons#', false, __FILE__);
+		add_integration_function('integrate_load_permissions', __CLASS__ . '::loadPermissions#', false, __FILE__);
+		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas#', false, __FILE__);
+		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false, __FILE__);
 	}
 
 	/**
@@ -36,7 +36,7 @@ class SimTopics
 	 *
 	 * @return void
 	 */
-	public static function loadTheme()
+	public function loadTheme()
 	{
 		loadLanguage('SimTopics/');
 	}
@@ -46,7 +46,7 @@ class SimTopics
 	 *
 	 * @return void
 	 */
-	public static function menuButtons()
+	public function menuButtons()
 	{
 		global $modSettings, $context, $txt, $scripturl, $settings;
 
@@ -64,13 +64,13 @@ class SimTopics
 			return;
 
 		if (!empty($context['current_topic']) && !empty($modSettings['simtopics_on_display']))
-			self::checkTopicsOnDisplay();
+			$this->checkTopicsOnDisplay();
 
-		self::showColumns();
+		$this->showColumns();
 
 		if (allowedTo('simtopics_post') && !empty($context['is_new_topic']) && !empty($modSettings['simtopics_when_new_topic'])) {
 			if (isset($_POST['query']))
-				self::checkTopicsOnPost();
+				$this->checkTopicsOnPost();
 
 			$context['insert_after_template'] .= '
 		<script>
@@ -95,7 +95,7 @@ class SimTopics
 	 * @param string $title
 	 * @return string
 	 */
-	private static function getCorrectTitle($title)
+	private function getCorrectTitle($title)
 	{
 		global $db_type, $smcFunc;
 
@@ -126,7 +126,7 @@ class SimTopics
 	 *
 	 * @return void
 	 */
-	public static function checkTopicsOnPost()
+	public function checkTopicsOnPost()
 	{
 		global $smcFunc, $txt, $db_connection, $db_type, $modSettings, $context;
 
@@ -145,7 +145,7 @@ class SimTopics
 			$output['error'] = true;
 		} else {
 			$search_string = $smcFunc['db_escape_string'](implode(' ', $query), $db_connection);
-			$title = self::getCorrectTitle($search_string);
+			$title = $this->getCorrectTitle($search_string);
 		}
 
 		if (!empty($count) && !empty(ltrim($title, '*'))) {
@@ -197,14 +197,11 @@ class SimTopics
 	 *
 	 * @return void
 	 */
-	public static function checkTopicsOnDisplay()
+	public function checkTopicsOnDisplay()
 	{
 		global $context, $modSettings, $user_info, $options, $smcFunc, $db_type, $settings, $scripturl, $txt;
 
-		if (!allowedTo('simtopics_view') || isset($_REQUEST['xml']) || !empty($context['is_new_topic']))
-			return;
-
-		if (empty($context['subject']))
+		if (!allowedTo('simtopics_view') || isset($_REQUEST['xml']) || !empty($context['is_new_topic']) || empty($context['subject']))
 			return;
 
 		if (($context['similar_topics'] = cache_get_data('similar_topics-' . $context['current_topic'] . '-u' . $user_info['id'], $modSettings['simtopics_cache_int'])) == null) {
@@ -237,7 +234,7 @@ class SimTopics
 				}
 			}
 
-			$title = self::getCorrectTitle($context['subject']);
+			$title = $this->getCorrectTitle($context['subject']);
 
 			if (!empty(ltrim($title, '*'))) {
 				db_extend('search');
@@ -271,7 +268,7 @@ class SimTopics
 					LIMIT {int:limit}',
 					array(
 						'language'       => $db_type == 'postgresql' ? $smcFunc['db_search_language']() : '',
-						'title'          => self::getCorrectTitle($context['subject']),
+						'title'          => $this->getCorrectTitle($context['subject']),
 						'current_topic'  => $context['current_topic'],
 						'current_board'  => $context['current_board'],
 						'is_approved'    => 1,
@@ -406,7 +403,7 @@ class SimTopics
 	 * @param array $permissionList
 	 * @return void
 	 */
-	public static function loadPermissions(&$permissionGroups, &$permissionList)
+	public function loadPermissions(&$permissionGroups, &$permissionList)
 	{
 		$permissionGroups['membergroup']['simple'] = array('simtopics');
 		$permissionGroups['membergroup']['classic'] = array('simtopics');
@@ -421,7 +418,7 @@ class SimTopics
 	 * @param array $admin_areas
 	 * @return void
 	 */
-	public static function adminAreas(&$admin_areas)
+	public function adminAreas(&$admin_areas)
 	{
 		global $txt;
 
@@ -434,9 +431,9 @@ class SimTopics
 	 * @param array $subActions
 	 * @return void
 	 */
-	public static function modifyModifications(&$subActions)
+	public function modifyModifications(&$subActions)
 	{
-		$subActions['simtopics'] = array('SimTopics', 'settings');
+		$subActions['simtopics'] = array($this, 'settings');
 	}
 
 	/**
@@ -444,7 +441,7 @@ class SimTopics
 	 *
 	 * @return void
 	 */
-	public static function settings()
+	public function settings()
 	{
 		global $context, $txt, $scripturl;
 
@@ -455,7 +452,7 @@ class SimTopics
 		$context['post_url']       = $scripturl . '?action=admin;area=modsettings;save;sa=simtopics';
 		$context[$context['admin_menu_name']]['tab_data']['tabs']['simtopics'] = array('description' => $txt['simtopics_desc']);
 
-		self::showColumns();
+		$this->showColumns();
 
 		$config_vars = array(
 			array('int', 'simtopics_num_topics', 'subtext' => $txt['simtopics_nt_desc']),
@@ -513,7 +510,7 @@ class SimTopics
 	 *
 	 * @return void
 	 */
-	private static function showColumns()
+	private function showColumns()
 	{
 		global $modSettings, $txt, $context;
 
