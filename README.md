@@ -5,15 +5,15 @@
 
 * **Author:** Bugo [dragomano.ru](https://dragomano.ru/mods/similar-topics)
 * **License:** [BSD 3](https://github.com/dragomano/Similar-Topics/blob/master/LICENSE)
-* **Compatible with:** SMF 2.1 RC3+ / PHP 7.2+
+* **Compatible with:** SMF 2.1 / PHP 7.2+
 * **Tested on:** PHP 7.4.26 / MariaDB 10.6.5
 * **Hooks only:** Yes
-* **Languages:** English, French, Russian, Spanish, Turkish
+* **Languages:** English, French, Russian, Spanish, Turkish, Italian
 
 ## Description
 This mod displays a list of similar topics at the bottom of current topic page and when creating new topic.
 
-This mod needs MySQL 5.6 or greater. But MariaDB 10.3+ or PostgreSQL 9.6+ is better :)
+This mod needs MySQL 5.6+, MariaDB 10.3+ or PostgreSQL 9.6+.
 To search quicker, the mod adds an index for _subject_ column in `{db_prefix}messages` table.
 
 ### Features:
