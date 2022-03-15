@@ -1,7 +1,7 @@
 <?php
 
 $txt['similar_topics']           = 'Temas Similares';
-$txt['simtopics_desc']           = 'Desde aqui puede configurar las distintas opciones del mod: Similar Topics. You can also buy <a class="bbc_link" href="https://ko-fi.com/U7U41XD2G">a cup of coffee</a> for the developer.';
+$txt['simtopics_desc']           = 'Desde aqui puede configurar las distintas opciones del mod: Similar Topics. You can also buy <a class="bbc_link" href="https://www.buymeacoffee.com/bugo">a cup of coffee</a> for the developer.';
 $txt['simtopics_settings']       = 'Configuracion Similar Topics';
 $txt['simtopics_num_topics']     = 'Maximo de temas a mostrar';
 $txt['simtopics_nt_desc']        = '0 para desactivar el mod.';

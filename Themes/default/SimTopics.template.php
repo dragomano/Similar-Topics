@@ -6,10 +6,8 @@ function template_simtopics()
 
 	if (!empty($context['similar_topics']))	{
 		echo '
-		<div class="generic_list_wrapper clear" style="margin: 0; padding: 8px 10px; border-radius: 6px 6px 0 0">
-			<h3>
-				', $txt['similar_topics'], ' (', count($context['similar_topics']), ')
-			</h3>
+		<div class="cat_bar">
+			<h3 class="catbg">', $txt['similar_topics'], ' (', count($context['similar_topics']), ')</h3>
 		</div>
 		<div id="messageindex" style="margin-bottom: 0.6em">
 			<div id="topic_container" itemscope itemtype="http://schema.org/WebPage">';
@@ -122,8 +120,8 @@ function template_callback_displayed_columns()
 
 		echo '
 			<li>
-				<label for="ignore_column', $column['id'], '">
-					<input type="checkbox" id="ignore_column', $column['id'], '" name="ignore_column[', $column['id'], ']" value="', $column['id'], '"', !empty($column['show']) ? ' checked="checked"' : '', ' class="input_check"', $column['protect'] ? ' disabled="true"' : '', '> ', $column['name'], '
+				<label for="displayed_column', $column['id'], '">
+					<input type="checkbox" id="displayed_column', $column['id'], '" name="displayed_column[', $column['id'], ']" value="', $column['id'], '"', !empty($column['show']) ? ' checked="checked"' : '', ' class="input_check"', $column['protect'] ? ' disabled="true"' : '', '> ', $column['name'], '
 				</label>
 			</li>';
 

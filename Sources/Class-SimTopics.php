@@ -6,46 +6,32 @@
  * @package Similar Topics
  * @link https://dragomano.ru/mods/similar-topics
  * @author Bugo <bugo@dragomano.ru>
- * @copyright 2012-2021 Bugo
+ * @copyright 2012-2022 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.1.4
+ * @version 1.2
  */
 
 if (!defined('SMF'))
-	die('Hacking attempt...');
+	die('No direct access...');
 
-class SimTopics
+final class SimTopics
 {
-	/**
-	 * Подключаем необходимые хуки
-	 *
-	 * @return void
-	 */
 	public function hooks()
 	{
 		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
 		add_integration_function('integrate_menu_buttons', __CLASS__ . '::menuButtons#', false, __FILE__);
 		add_integration_function('integrate_load_permissions', __CLASS__ . '::loadPermissions#', false, __FILE__);
 		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas#', false, __FILE__);
+		add_integration_function('integrate_admin_search', __CLASS__ . '::adminSearch#', false, __FILE__);
 		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false, __FILE__);
 	}
 
-	/**
-	 * Подключаем языковой файл
-	 *
-	 * @return void
-	 */
 	public function loadTheme()
 	{
 		loadLanguage('SimTopics/');
 	}
 
-	/**
-	 * Проверяем, где мы находимся, и подключаем соответствующие скрипты или функции
-	 *
-	 * @return void
-	 */
 	public function menuButtons()
 	{
 		global $modSettings, $context, $txt, $scripturl, $settings;
@@ -55,7 +41,7 @@ class SimTopics
 
 		$context['simtopics_ignored_boards'] = array();
 		if (!empty($modSettings['simtopics_ignored_boards']))
-			$context['simtopics_ignored_boards'] = explode(",", $modSettings['simtopics_ignored_boards']);
+			$context['simtopics_ignored_boards'] = explode(',', $modSettings['simtopics_ignored_boards']);
 
 		if (!empty($modSettings['recycle_board']))
 			$context['simtopics_ignored_boards'][] = $modSettings['recycle_board'];
@@ -66,7 +52,7 @@ class SimTopics
 		if (!empty($context['current_topic']) && !empty($modSettings['simtopics_on_display']))
 			$this->checkTopicsOnDisplay();
 
-		$this->showColumns();
+		$this->prepareColumns();
 
 		if (allowedTo('simtopics_post') && !empty($context['is_new_topic']) && !empty($modSettings['simtopics_when_new_topic'])) {
 			if (isset($_POST['query']))
@@ -76,26 +62,20 @@ class SimTopics
 		<script>
 			let simOpt = {
 				"title": "' . $txt['similar_topics'] . '",
-				"url" : "' . str_replace("index.php", "", $scripturl) . '",
 				"by": "' . $txt['started_by'] . '",
 				"board": "' . $txt['board'] . '",
 				"replies": "' . $txt['replies'] . '",
 				"views": "' . $txt['views'] . '",
 				"no_result": "' . $txt['simtopics_no_result'] . '",
-				"cur_board": "' . $context['current_board'] . '"
+				"cur_board": "' . $context['current_board'] . '",
+				"show_top": ' . (empty($modSettings['simtopics_position']) ? 'true' : 'false') . '
 			};
 		</script>
 		<script src="' . $settings['default_theme_url'] . '/scripts/simtopics.js"></script>';
 		}
 	}
 
-	/**
-	 * Возврат подготовленной строки для поиска в базе
-	 *
-	 * @param string $title
-	 * @return string
-	 */
-	private function getCorrectTitle($title)
+	private function getCorrectTitle(string $title): string
 	{
 		global $db_type, $smcFunc;
 
@@ -110,7 +90,7 @@ class SimTopics
 			return $smcFunc['strlen']($word) > 2;
 		});
 
-		if ($db_type == 'postgresql') {
+		if ($db_type === 'postgresql') {
 			// Переводим массив в строку с разделителем «|» между словами (означает «ИЛИ»; если нужно «И» - поставить «&»)
 			$correct_title = trim(urldecode(implode(' | ', array_filter($correct_title))));
 		} else {
@@ -123,8 +103,6 @@ class SimTopics
 
 	/**
 	 * Поиск похожих тем при создании новой
-	 *
-	 * @return void
 	 */
 	public function checkTopicsOnPost()
 	{
@@ -136,13 +114,14 @@ class SimTopics
 			'error'  => false
 		);
 
-		$query = !empty($_POST['query']) ? array_filter(explode(' ', $smcFunc['htmlspecialchars']($_POST['query']))) : [];
+		$query = empty($_POST['query']) ? [] : array_filter(explode(' ', $smcFunc['htmlspecialchars']($_POST['query'])));
 		$count = count($query);
-		$board = !empty($_REQUEST['board']) ? (int) $_REQUEST['board'] : 0;
+		$board = empty($_REQUEST['board']) ? 0 : (int) $_REQUEST['board'];
 
 		if (empty($query)) {
 			$output['msg']   = $txt['simtopics_no_subject'];
 			$output['error'] = true;
+			exit(json_encode($output));
 		} else {
 			$search_string = $smcFunc['db_escape_string'](implode(' ', $query), $db_connection);
 			$title = $this->getCorrectTitle($search_string);
@@ -154,7 +133,7 @@ class SimTopics
 			$result = $smcFunc['db_query']('', '
 				SELECT DISTINCT
 					t.id_topic, t.id_board, t.is_sticky, t.locked, t.id_member_started as id_author, t.num_replies, t.num_views,
-					b.name as bname, mf.icon, mf.poster_name as author, mf.subject,' . ($db_type == 'postgresql' ? '
+					b.name as bname, mf.icon, mf.poster_name as author, mf.subject,' . ($db_type === 'postgresql' ? '
 					ts_rank_cd(to_tsvector(mf.subject), to_tsquery({string:language}, {string:title}))' : '
 					MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . 'AS score
 				FROM {db_prefix}topics AS t
@@ -165,13 +144,13 @@ class SimTopics
 					AND t.id_board = {int:current_board}' : '') . (!empty($context['simtopics_ignored_boards']) ? '
 					AND b.id_board NOT IN ({array_int:ignore_boards})' : '') . '
 					AND {query_wanna_see_board}
-					AND {query_see_board}' . ($db_type == 'postgresql' ? '
+					AND {query_see_board}' . ($db_type === 'postgresql' ? '
 					AND to_tsvector(mf.subject) @@ to_tsquery({string:language}, {string:title})' : '
 					AND MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . '
 				ORDER BY score DESC
 				LIMIT {int:limit}',
 				array(
-					'language'      => $db_type == 'postgresql' ? $smcFunc['db_search_language']() : '',
+					'language'      => $db_type === 'postgresql' ? $smcFunc['db_search_language']() : '',
 					'title'         => $title,
 					'is_active'     => 1,
 					'current_board' => $board,
@@ -194,12 +173,10 @@ class SimTopics
 
 	/**
 	 * Поиск похожих тем внутри текущей темы
-	 *
-	 * @return void
 	 */
 	public function checkTopicsOnDisplay()
 	{
-		global $context, $modSettings, $user_info, $options, $smcFunc, $db_type, $settings, $scripturl, $txt;
+		global $context, $user_info, $modSettings, $options, $smcFunc, $db_type, $settings, $scripturl, $txt;
 
 		if (!allowedTo('simtopics_view') || isset($_REQUEST['xml']) || !empty($context['is_new_topic']) || empty($context['subject']))
 			return;
@@ -245,7 +222,7 @@ class SimTopics
 						mf.subject AS first_subject, mf.id_member AS first_id_member, COALESCE(memf.real_name, mf.poster_name) AS first_display_name, mf.poster_time AS first_poster_time, mf.icon AS first_icon, mf.poster_name AS first_member_name, b.name, ' . ($user_info['is_guest'] ? '0' : 'COALESCE(lt.id_msg, COALESCE(lmr.id_msg, -1)) + 1') . ' AS new_from,
 						COALESCE(meml.real_name, ml.poster_name) AS last_display_name, ' . (!empty($modSettings['preview_characters']) ? '
 						SUBSTRING(ml.body, 1, ' . ($modSettings['preview_characters'] + 256) . ') AS last_body,
-						SUBSTRING(mf.body, 1, ' . ($modSettings['preview_characters'] + 256) . ') AS first_body,' : '') . 'ml.smileys_enabled AS last_smileys, mf.smileys_enabled AS first_smileys,' . ($db_type == 'postgresql' ? '
+						SUBSTRING(mf.body, 1, ' . ($modSettings['preview_characters'] + 256) . ') AS first_body,' : '') . 'ml.smileys_enabled AS last_smileys, mf.smileys_enabled AS first_smileys,' . ($db_type === 'postgresql' ? '
 						ts_rank_cd(to_tsvector(mf.subject), to_tsquery({string:language}, {string:title}))' : '
 						MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . 'AS score
 					FROM {db_prefix}topics AS t
@@ -261,13 +238,13 @@ class SimTopics
 						AND t.id_board = {int:current_board}' : '') . (!empty($context['simtopics_ignored_boards']) ? '
 						AND t.id_board NOT IN ({array_int:ignore_boards})' : '') . '
 						AND {query_wanna_see_board}
-						AND {query_see_board}' . ($db_type == 'postgresql' ? '
+						AND {query_see_board}' . ($db_type === 'postgresql' ? '
 						AND to_tsvector(mf.subject) @@ to_tsquery({string:language}, {string:title})' : '
 						AND MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . '
-					ORDER BY {raw:sort_type}
+					ORDER BY is_sticky DESC, {raw:sort_type}
 					LIMIT {int:limit}',
 					array(
-						'language'       => $db_type == 'postgresql' ? $smcFunc['db_search_language']() : '',
+						'language'       => $db_type === 'postgresql' ? $smcFunc['db_search_language']() : '',
 						'title'          => $this->getCorrectTitle($context['subject']),
 						'current_topic'  => $context['current_topic'],
 						'current_board'  => $context['current_board'],
@@ -393,17 +370,11 @@ class SimTopics
 		}
 
 		loadTemplate('SimTopics');
+
 		$context['template_layers'][] = empty($modSettings['simtopics_position']) ? 'simtopics_top' : 'simtopics_bot';
 	}
 
-	/**
-	 * Настраиваем права доступа
-	 *
-	 * @param array $permissionGroups
-	 * @param array $permissionList
-	 * @return void
-	 */
-	public function loadPermissions(&$permissionGroups, &$permissionList)
+	public function loadPermissions(array &$permissionGroups, array &$permissionList)
 	{
 		$permissionGroups['membergroup']['simple'] = array('simtopics');
 		$permissionGroups['membergroup']['classic'] = array('simtopics');
@@ -412,36 +383,27 @@ class SimTopics
 		$permissionList['membergroup']['simtopics_post'] = array(false, 'simtopics', 'simtopics');
 	}
 
-	/**
-	 * Объявляем вкладку «Похожие темы» в настройках модификаций
-	 *
-	 * @param array $admin_areas
-	 * @return void
-	 */
-	public function adminAreas(&$admin_areas)
+	public function adminAreas(array &$admin_areas)
 	{
 		global $txt;
 
 		$admin_areas['config']['areas']['modsettings']['subsections']['simtopics'] = array($txt['similar_topics']);
 	}
 
-	/**
-	 * Подключаем страницу с настройками мода
-	 *
-	 * @param array $subActions
-	 * @return void
-	 */
-	public function modifyModifications(&$subActions)
+	public function adminSearch(array &$language_files, array &$include_files, array &$settings_search)
+	{
+		$settings_search[] = array(array($this, 'settings'), 'area=modsettings;sa=simtopics');
+	}
+
+	public function modifyModifications(array &$subActions)
 	{
 		$subActions['simtopics'] = array($this, 'settings');
 	}
 
 	/**
-	 * Настройки мода в админке
-	 *
-	 * @return void
+	 * @return array|void
 	 */
-	public function settings()
+	public function settings(bool $return_config = false)
 	{
 		global $context, $txt, $scripturl;
 
@@ -450,9 +412,9 @@ class SimTopics
 		$context['page_title']     = $txt['simtopics_settings'];
 		$context['settings_title'] = $txt['settings'];
 		$context['post_url']       = $scripturl . '?action=admin;area=modsettings;save;sa=simtopics';
-		$context[$context['admin_menu_name']]['tab_data']['tabs']['simtopics'] = array('description' => $txt['simtopics_desc']);
+		$context[$context['admin_menu_name']]['tab_data']['description'] = $txt['simtopics_desc'];
 
-		$this->showColumns();
+		$this->prepareColumns();
 
 		$config_vars = array(
 			array('int', 'simtopics_num_topics', 'subtext' => $txt['simtopics_nt_desc']),
@@ -470,51 +432,30 @@ class SimTopics
 			array('callback', 'displayed_columns')
 		);
 
+		if ($return_config)
+			return $config_vars;
+
 		// Saving?
 		if (isset($_GET['save'])) {
-			if (empty($_POST['ignore_column']))
-				$_POST['ignore_column'] = array();
-
-			unset($_POST['st_displayed_columns']);
-
-			if (isset($_POST['ignore_column'])) {
-				if (!is_array($_POST['ignore_column']))
-					$_POST['ignore_column'] = array($_POST['ignore_column']);
-
-				foreach ($_POST['ignore_column'] as $k => $d) {
-					$d = (int) $d;
-					if ($d != 0)
-						$_POST['ignore_column'][$k] = $d;
-					else
-						unset($_POST['ignore_column'][$k]);
-				}
-
-				$_POST['st_displayed_columns'] = implode(',', $_POST['ignore_column']);
-				unset($_POST['ignore_column']);
-			}
+			$_POST['simtopics_displayed_columns'] = $_POST['displayed_column'];
 
 			checkSession();
 
-			saveDBSettings($config_vars);
-			updateSettings(array('simtopics_displayed_columns' => $_POST['st_displayed_columns']));
-			clean_cache();
+			$save_vars = $config_vars;
+			$save_vars[] = ['select', 'simtopics_displayed_columns', $_POST['displayed_column'], 'multiple' => true];
 
+			saveDBSettings($save_vars);
 			redirectexit('action=admin;area=modsettings;sa=simtopics');
 		}
 
 		prepareDBSettingContext($config_vars);
 	}
 
-	/**
-	 * Отображение активных столбцов в таблице похожих тем
-	 *
-	 * @return void
-	 */
-	private function showColumns()
+	private function prepareColumns()
 	{
 		global $modSettings, $txt, $context;
 
-		$columns = !empty($modSettings['simtopics_displayed_columns']) ? explode(',', $modSettings['simtopics_displayed_columns']) : [];
+		$columns = !empty($modSettings['simtopics_displayed_columns']) ? smf_json_decode($modSettings['simtopics_displayed_columns']) : [];
 
 		$protect_columns = array(2);
 

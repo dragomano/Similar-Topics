@@ -1,12 +1,13 @@
 (function($) {
 	function get_simtopics() {
 		let tlist = $("#topic_container");
-		$(tlist).html(ajax_notification_text);
+
+		$(tlist).html('<div class="infobox" style=\"margin-bottom: -10px\">' + ajax_notification_text + '</div>');
 
 		let request = $.ajax({
 			type : "POST",
 			dataType : "json",
-			url: simOpt.url + "?action=post",
+			url: smf_scripturl + "?action=post",
 			data: {"query": $("input[name=\"subject\"]").val(), "board": simOpt.cur_board}
 		});
 
@@ -17,7 +18,7 @@
 				let topics = e.topics;
 
 				if (topics == false) {
-					$(tlist).append("<div class=\"noticebox\">" + simOpt.no_result + "</div>")
+					$(tlist).append("<div class=\"noticebox\" style=\"margin-bottom: -10px\">" + simOpt.no_result + "</div>")
 				} else {
 					for (id in topics) {
 						let topic = topics[id];
@@ -35,9 +36,9 @@
 							let topic_author = " <strong>" + topic.author + "</strong>";
 
 							if (topic.id_author != 0)
-								topic_author = " <a href=\"" + simOpt.url + "index.php?action=profile;u=" + topic.id_author + "\">"+ topic.author +  "</a>";
+								topic_author = " <a href=\"" + smf_scripturl + "?action=profile;u=" + topic.id_author + "\">" + topic.author +  "</a>";
 
-							$(tlist).append("<div class=\"" + color_class + "\" style=\"padding: 0.6em\"><div class=\"info info_block\"><div><div class=\"message_index_title\"><span><a href=\"" + simOpt.url + "index.php?topic=" + topic.id_topic + ".0\">" + topic.subject + "</a></span></div><p class=\"floatleft\">" + simOpt.by + topic_author + "</p><span class=\"floatright\">" + simOpt.board + " <a href=\"" + simOpt.url + "index.php?board=" + topic.id_board + ".0\">" + topic.bname + "</a></span></div></div><div class=\"board_stats floatright\">" + simOpt.replies + ": " + topic.num_replies + "<br>" + simOpt.views + ": " + topic.num_views + "</div></div>");
+							$(tlist).append("<div class=\"" + color_class + "\" style=\"padding: 0.6em\"><div class=\"info info_block\"><div><div class=\"message_index_title\"><span><a href=\"" + smf_scripturl + "?topic=" + topic.id_topic + ".0\">" + topic.subject + "</a></span></div><p class=\"floatleft\">" + simOpt.by + topic_author + "</p><span class=\"floatright\">" + simOpt.board + " <a href=\"" + smf_scripturl + "?board=" + topic.id_board + ".0\">" + topic.bname + "</a></span></div></div><div class=\"board_stats floatright\">" + simOpt.replies + ": " + topic.num_replies + "<br>" + simOpt.views + ": " + topic.num_views + "</div></div>");
 						}
 					}
 				}
@@ -47,11 +48,17 @@
 		});
 	};
 
-	$("#post_header").before("<div class=\"generic_list_wrapper\" style=\"padding: 8px 10px;	border-radius: 6px 6px 0 0\"><h4><span class=\"main_icons frenemy\"></span> " + simOpt.title + "</h4></div><div id=\"messageindex\" style=\"margin-bottom: 0.2em\"><div id=\"topic_container\"></div></div>");
+	let block = "<div class=\"cat_bar\"><h3 class=\"catbg\">" + simOpt.title + "</h3></div><div id=\"topic_container\"></div>";
+
+	simOpt.show_top ? $("#postmodify").before(block) : $("#postmodify").after(block);
 
 	get_simtopics();
 
 	$("input[name=\"subject\"]").on("keyup", function() {
-		get_simtopics();
+		if(this.value.length < 1) return true;
+
+		let timer;
+		clearTimeout(timer);
+		timer = setTimeout(() => get_simtopics(), 1800);
 	});
 })(jQuery);

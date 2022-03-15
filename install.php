@@ -14,8 +14,8 @@ db_extend('extra');
 
 $version = $smcFunc['db_get_version']();
 
-if (version_compare($version, '5.6', '<'))
-	die('This mod needs MySQL 5.6 or greater. You will not be able to install/use this mod, contact your host and ask for a database engine upgrade.');
+if (version_compare($version, '7.2', '<'))
+	die('This mod needs MySQL 7.2 or greater. You will not be able to install/use this mod, contact your host and ask for a database engine upgrade.');
 
 db_extend('search');
 
@@ -53,12 +53,11 @@ if ($db_type == 'postgresql') {
 }
 
 $initial_settings = array(
-	'simtopics_num_topics'        => 5,
-	'simtopics_only_cur_board'    => 1,
-	'simtopics_on_display'        => 1,
-	'simtopics_position'          => 1,
-	'simtopics_cache_int'         => 3600,
-	'simtopics_displayed_columns' => '1,3,4'
+	'simtopics_num_topics'     => 5,
+	'simtopics_only_cur_board' => 1,
+	'simtopics_on_display'     => 1,
+	'simtopics_position'       => 1,
+	'simtopics_cache_int'      => 3600
 );
 
 $vars = array();

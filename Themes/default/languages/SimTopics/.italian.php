@@ -1,7 +1,7 @@
 <?php
 
 $txt['similar_topics']           = 'Discussioni simili';
-$txt['simtopics_desc']           = 'Qui puoi modificare le impostazioni del mod Discussioni simili. Puoi anche <a class="bbc_link" href="https://ko-fi.com/U7U41XD2G">offrirmi un caffe</a> per lo sviluppo.';
+$txt['simtopics_desc']           = 'Qui puoi modificare le impostazioni del mod Discussioni simili. Puoi anche <a class="bbc_link" href="https://www.buymeacoffee.com/bugo">offrirmi un caffe</a> per lo sviluppo.';
 $txt['simtopics_settings']       = 'Discussioni simili - Settaggi';
 $txt['simtopics_num_topics']     = 'Discussioni massime da mostrare';
 $txt['simtopics_nt_desc']        = 'Imposta 0 per disabilitare';

@@ -1,7 +1,7 @@
 <?php
 
 $txt['similar_topics']           = 'Sujets Similaires';
-$txt['simtopics_desc']           = 'Ici, vous pouvez modifier les paramètres du module des Sujets Similaires. You can also buy <a class="bbc_link" href="https://ko-fi.com/U7U41XD2G">a cup of coffee</a> for the developer.';
+$txt['simtopics_desc']           = 'Ici, vous pouvez modifier les paramètres du module des Sujets Similaires. You can also buy <a class="bbc_link" href="https://www.buymeacoffee.com/bugo">a cup of coffee</a> for the developer.';
 $txt['simtopics_settings']       = 'Réglages du Module des Sujets Similaires';
 $txt['simtopics_num_topics']     = 'Maximum de sujets à afficher';
 $txt['simtopics_nt_desc']        = 'Définir 0 pour désactiver le module';
