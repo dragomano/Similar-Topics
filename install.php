@@ -5,17 +5,10 @@ if (file_exists(dirname(__FILE__) . '/SSI.php') && !defined('SMF'))
 elseif(!defined('SMF'))
 	die('<b>Error:</b> Cannot install - please verify that you put this file in the same place as SMF\'s index.php and SSI.php files.');
 
-global $user_info, $db_type, $smcFunc;
+global $user_info, $db_type, $smcFunc, $modSettings;
 
 if ((SMF == 'SSI') && !$user_info['is_admin'])
 	die('Admin privileges required.');
-
-db_extend('extra');
-
-$version = $smcFunc['db_get_version']();
-
-if (version_compare($version, '5.6', '<'))
-	die('This mod needs MySQL 5.6 or greater. You will not be able to install/use this mod, contact your host and ask for a database engine upgrade.');
 
 db_extend('search');
 

@@ -9,7 +9,7 @@
  * @copyright 2012-2022 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.2
+ * @version 1.2.2
  */
 
 if (!defined('SMF'))
@@ -412,9 +412,6 @@ final class SimTopics
 		$context['page_title']     = $txt['simtopics_settings'];
 		$context['settings_title'] = $txt['settings'];
 		$context['post_url']       = $scripturl . '?action=admin;area=modsettings;save;sa=simtopics';
-		$context[$context['admin_menu_name']]['tab_data']['description'] = $txt['simtopics_desc'];
-
-		$this->prepareColumns();
 
 		$config_vars = array(
 			array('int', 'simtopics_num_topics', 'subtext' => $txt['simtopics_nt_desc']),
@@ -435,14 +432,16 @@ final class SimTopics
 		if ($return_config)
 			return $config_vars;
 
+		$context[$context['admin_menu_name']]['tab_data']['description'] = $txt['simtopics_desc'];
+
 		// Saving?
 		if (isset($_GET['save'])) {
-			$_POST['simtopics_displayed_columns'] = $_POST['displayed_column'];
-
 			checkSession();
 
+			$_POST['simtopics_displayed_columns'] = $columns = $_POST['displayed_column'] ?? [];
+
 			$save_vars = $config_vars;
-			$save_vars[] = ['select', 'simtopics_displayed_columns', $_POST['displayed_column'], 'multiple' => true];
+			$save_vars[] = ['select', 'simtopics_displayed_columns', $columns, 'multiple' => true];
 
 			saveDBSettings($save_vars);
 			redirectexit('action=admin;area=modsettings;sa=simtopics');
@@ -455,7 +454,7 @@ final class SimTopics
 	{
 		global $modSettings, $txt, $context;
 
-		$columns = !empty($modSettings['simtopics_displayed_columns']) ? smf_json_decode($modSettings['simtopics_displayed_columns']) : [];
+		$columns = empty($modSettings['simtopics_displayed_columns']) ? [] : smf_json_decode($modSettings['simtopics_displayed_columns'], true);
 
 		$protect_columns = array(2);
 
