@@ -6,7 +6,7 @@ function template_simtopics()
 
 	if (!empty($context['similar_topics']))	{
 		echo '
-		<div class="cat_bar">
+		<div class="cat_bar clear">
 			<h3 class="catbg">', $txt['similar_topics'], ' (', count($context['similar_topics']), ')</h3>
 		</div>
 		<div id="messageindex" style="margin-bottom: 0.6em">
