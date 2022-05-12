@@ -5,7 +5,7 @@
 ![PHP](https://img.shields.io/badge/PHP-^7.2-blue.svg?style=flat)
 [![Crowdin](https://badges.crowdin.net/similar-topics/localized.svg)](https://crowdin.com/project/similar-topics)
 
-* **Tested on:** PHP 7.4.29 / MariaDB 10.6.5
+* **Tested on:** PHP 7.4.29 / MariaDB 10.6.7
 * **Languages:** English, French, Russian, Spanish, Turkish, Italian, Dutch
 
 ## Description

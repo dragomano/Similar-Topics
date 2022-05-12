@@ -9,7 +9,7 @@
  * @copyright 2012-2022 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.2.2
+ * @version 1.2.3
  */
 
 if (!defined('SMF'))
@@ -454,7 +454,7 @@ final class SimTopics
 	{
 		global $modSettings, $txt, $context;
 
-		$columns = empty($modSettings['simtopics_displayed_columns']) ? [] : smf_json_decode($modSettings['simtopics_displayed_columns'], true);
+		$columns = smf_json_decode($modSettings['simtopics_displayed_columns'] ?? '', true);
 
 		$protect_columns = array(2);
 
