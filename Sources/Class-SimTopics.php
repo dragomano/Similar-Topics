@@ -67,7 +67,7 @@ final class SimTopics
 				"replies": "' . $txt['replies'] . '",
 				"views": "' . $txt['views'] . '",
 				"no_result": "' . $txt['simtopics_no_result'] . '",
-				"cur_board": "' . $context['current_board'] . '",
+				"cur_board": "' . ($context['current_board'] ?? 0) . '",
 				"show_top": ' . (empty($modSettings['simtopics_position']) ? 'true' : 'false') . '
 			};
 		</script>
@@ -77,7 +77,7 @@ final class SimTopics
 
 	private function getCorrectTitle(string $title): string
 	{
-		global $db_type, $smcFunc;
+		global $smcFunc, $db_type;
 
 		// Удаляем все знаки препинания
 		$correct_title = preg_replace('/\p{P}+/u', '', $title);
