@@ -6,7 +6,7 @@
 [![Crowdin](https://badges.crowdin.net/similar-topics/localized.svg)](https://crowdin.com/project/similar-topics)
 
 * **Tested on:** PHP 7.4.29 / MariaDB 10.6.7
-* **Languages:** English, French, Russian, Spanish, Turkish, Italian, Dutch
+* **Languages:** English, French, Russian, Spanish, Turkish, Italian, Dutch, Portuguese
 
 ## Description
 This mod displays a list of similar topics at the bottom of current topic page and when creating new topic.
