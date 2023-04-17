@@ -1,0 +1,6 @@
+**/.idea/
+**/.vscode/
+**/vendor/
+Themes/default/languages/SimilarTopics/*
+!Themes/default/languages/SimilarTopics/index.php
+!Themes/default/languages/SimilarTopics/.english.php
