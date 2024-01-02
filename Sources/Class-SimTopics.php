@@ -6,10 +6,10 @@
  * @package Similar Topics
  * @link https://dragomano.ru/mods/similar-topics
  * @author Bugo <bugo@dragomano.ru>
- * @copyright 2012-2022 Bugo
+ * @copyright 2012-2024 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.2.3
+ * @version 1.3
  */
 
 if (!defined('SMF'))
@@ -34,7 +34,7 @@ final class SimTopics
 
 	public function menuButtons()
 	{
-		global $modSettings, $context, $txt, $scripturl, $settings;
+		global $modSettings, $context, $txt, $settings;
 
 		if (empty($modSettings['simtopics_num_topics']) || isset($_REQUEST['xml']))
 			return;
