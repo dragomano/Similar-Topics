@@ -11,7 +11,7 @@ $txt['simtopics_when_new_topic'] = 'Display list of similar topics when creating
 $txt['simtopics_when_new_topic_variants'] = array($txt['no'], 'Above a post form', 'Below a post form');
 $txt['simtopics_on_display'] = 'Display list of similar topics inside these topics';
 $txt['simtopics_position'] = 'Where to display the block of similar topics';
-$txt['simtopics_position_variants'] = array('Above a topic', 'Below a topic');
+$txt['simtopics_position_variants'] = array('Above a topic', 'Below a topic', 'Above and below a topic');
 
 $txt['simtopics_sorting'] = 'Sorting type';
 $txt['simtopics_sorting_variants'] = array(

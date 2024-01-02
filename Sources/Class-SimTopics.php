@@ -371,7 +371,17 @@ final class SimTopics
 
 		loadTemplate('SimTopics');
 
-		$context['template_layers'][] = empty($modSettings['simtopics_position']) ? 'simtopics_top' : 'simtopics_bot';
+		switch ($modSettings['simtopics_position']) {
+			case '1':
+				$context['template_layers'][] = 'simtopics_bot';
+				break;
+			case '2':
+				$context['template_layers'][] = 'simtopics_top';
+				$context['template_layers'][] = 'simtopics_bot';
+				break;
+			default:
+				$context['template_layers'][] = 'simtopics_top';
+		}
 	}
 
 	public function loadPermissions(array &$permissionGroups, array &$permissionList)
