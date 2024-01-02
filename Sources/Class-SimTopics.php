@@ -68,7 +68,7 @@ final class SimTopics
 				"views": "' . $txt['views'] . '",
 				"no_result": "' . $txt['simtopics_no_result'] . '",
 				"cur_board": "' . ($context['current_board'] ?? 0) . '",
-				"show_top": ' . (empty($modSettings['simtopics_position']) ? 'true' : 'false') . '
+				"show_top": ' . ($modSettings['simtopics_when_new_topic'] === '1' ? 'true' : 'false') . '
 			};
 		</script>
 		<script src="' . $settings['default_theme_url'] . '/scripts/simtopics.js"></script>';
@@ -416,7 +416,7 @@ final class SimTopics
 		$config_vars = array(
 			array('int', 'simtopics_num_topics', 'subtext' => $txt['simtopics_nt_desc']),
 			array('check', 'simtopics_only_cur_board', 'subtext' => $txt['simtopics_ocb_desc']),
-			array('check', 'simtopics_when_new_topic'),
+			array('select', 'simtopics_when_new_topic', $txt['simtopics_when_new_topic_variants']),
 			array('check', 'simtopics_on_display'),
 			array('select', 'simtopics_position', $txt['simtopics_position_variants']),
 			array('select', 'simtopics_sorting', $txt['simtopics_sorting_variants']),
