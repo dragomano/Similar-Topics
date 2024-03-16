@@ -10,7 +10,7 @@ function template_simtopics()
 			<h3 class="catbg">', $txt['similar_topics'], ' (', count($context['similar_topics']), ')</h3>
 		</div>
 		<div id="messageindex" style="margin-bottom: 0.6em">
-			<div id="topic_container" itemscope itemtype="http://schema.org/WebPage">';
+			<div id="topic_container" itemscope itemtype="https://schema.org/WebPage">';
 
 		foreach ($context['similar_topics'] as $topic) {
 			echo '
