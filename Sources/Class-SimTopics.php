@@ -9,7 +9,7 @@
  * @copyright 2012-2024 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.3
+ * @version 1.3.1
  */
 
 if (!defined('SMF'))
@@ -17,7 +17,7 @@ if (!defined('SMF'))
 
 final class SimTopics
 {
-	public function hooks()
+	public function hooks(): void
 	{
 		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
 		add_integration_function('integrate_menu_buttons', __CLASS__ . '::menuButtons#', false, __FILE__);
@@ -27,19 +27,19 @@ final class SimTopics
 		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false, __FILE__);
 	}
 
-	public function loadTheme()
+	public function loadTheme(): void
 	{
 		loadLanguage('SimTopics/');
 	}
 
-	public function menuButtons()
+	public function menuButtons(): void
 	{
 		global $modSettings, $context, $txt, $settings;
 
 		if (empty($modSettings['simtopics_num_topics']) || isset($_REQUEST['xml']))
 			return;
 
-		$context['simtopics_ignored_boards'] = array();
+		$context['simtopics_ignored_boards'] = [];
 		if (!empty($modSettings['simtopics_ignored_boards']))
 			$context['simtopics_ignored_boards'] = explode(',', $modSettings['simtopics_ignored_boards']);
 
@@ -58,9 +58,10 @@ final class SimTopics
 			if (isset($_POST['query']))
 				$this->checkTopicsOnPost();
 
-			$context['insert_after_template'] .= '
+			$context['insert_after_template'] .= /** @lang text */
+				'
 		<script>
-			let simOpt = {
+			const simOpt = {
 				"title": "' . $txt['similar_topics'] . '",
 				"by": "' . $txt['started_by'] . '",
 				"board": "' . $txt['board'] . '",
@@ -83,7 +84,7 @@ final class SimTopics
 		$correct_title = preg_replace('/\p{P}+/u', '', $title);
 
 		// Удаляем лишние пробелы
-		$correct_title = preg_replace('/[\s]+/i', ' ', $correct_title);
+		$correct_title = preg_replace('/\s+/i', ' ', $correct_title);
 
 		// Удаляем все слова короче 3 символов
 		$correct_title = array_filter(explode(' ', $correct_title), function ($word) use ($smcFunc) {
@@ -104,15 +105,15 @@ final class SimTopics
 	/**
 	 * Поиск похожих тем при создании новой
 	 */
-	public function checkTopicsOnPost()
+	public function checkTopicsOnPost(): void
 	{
 		global $smcFunc, $txt, $db_connection, $db_type, $modSettings, $context;
 
-		$output = array(
+		$output = [
 			'msg'    => '',
 			'topics' => false,
 			'error'  => false
-		);
+		];
 
 		$query = empty($_POST['query']) ? [] : array_filter(explode(' ', $smcFunc['htmlspecialchars']($_POST['query'])));
 		$count = count($query);
@@ -149,17 +150,17 @@ final class SimTopics
 					AND MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . '
 				ORDER BY score DESC
 				LIMIT {int:limit}',
-				array(
+				[
 					'language'      => $db_type === 'postgresql' ? $smcFunc['db_search_language']() : '',
 					'title'         => $title,
 					'is_active'     => 1,
 					'current_board' => $board,
 					'ignore_boards' => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
 					'limit'         => !empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
-				)
+				]
 			);
 
-			$topics = array();
+			$topics = [];
 			while ($topic = $smcFunc['db_fetch_assoc']($result))
 				$topics[$topic['id_topic']] = $topic;
 
@@ -174,7 +175,7 @@ final class SimTopics
 	/**
 	 * Поиск похожих тем внутри текущей темы
 	 */
-	public function checkTopicsOnDisplay()
+	public function checkTopicsOnDisplay(): void
 	{
 		global $context, $user_info, $modSettings, $options, $smcFunc, $db_type, $settings, $scripturl, $txt;
 
@@ -243,7 +244,7 @@ final class SimTopics
 						AND MATCH (mf.subject) AGAINST ({string:title} IN BOOLEAN MODE)') . '
 					ORDER BY is_sticky DESC, {raw:sort_type}
 					LIMIT {int:limit}',
-					array(
+					[
 						'language'       => $db_type === 'postgresql' ? $smcFunc['db_search_language']() : '',
 						'title'          => $this->getCorrectTitle($context['subject']),
 						'current_topic'  => $context['current_topic'],
@@ -253,12 +254,12 @@ final class SimTopics
 						'ignore_boards'  => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
 						'sort_type'      => $sort_type,
 						'limit'          => !empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
-					)
+					]
 				);
 
 				while ($row = $smcFunc['db_fetch_assoc']($request)) {
 					if (!empty($modSettings['preview_characters']))	{
-						$row['first_body'] = strip_tags(strtr(parse_bbc($row['first_body'], $row['first_smileys'], $row['id_first_msg']), array('<br>' => '&#10;')));
+						$row['first_body'] = strip_tags(strtr(parse_bbc($row['first_body'], $row['first_smileys'], $row['id_first_msg']), ['<br>' => '&#10;']));
 						if ($smcFunc['strlen']($row['first_body']) > $modSettings['preview_characters'])
 							$row['first_body'] = $smcFunc['substr']($row['first_body'], 0, $modSettings['preview_characters']) . '...';
 
@@ -269,7 +270,7 @@ final class SimTopics
 							$row['last_subject'] = $row['first_subject'];
 							$row['last_body']    = $row['first_body'];
 						} else {
-							$row['last_body'] = strip_tags(strtr(parse_bbc($row['last_body'], $row['last_smileys'], $row['id_last_msg']), array('<br>' => '&#10;')));
+							$row['last_body'] = strip_tags(strtr(parse_bbc($row['last_body'], $row['last_smileys'], $row['id_last_msg']), ['<br>' => '&#10;']));
 							if ($smcFunc['strlen']($row['last_body']) > $modSettings['preview_characters'])
 								$row['last_body'] = $smcFunc['substr']($row['last_body'], 0, $modSettings['preview_characters']) . '...';
 
@@ -288,7 +289,7 @@ final class SimTopics
 					}
 
 					if (empty($context['icon_sources'])) {
-						$context['icon_sources'] = array();
+						$context['icon_sources'] = [];
 						foreach ($context['stable_icons'] as $icon)
 							$context['icon_sources'][$icon] = 'images_url';
 					}
@@ -313,38 +314,48 @@ final class SimTopics
 					if ($row['locked'])
 						$colorClass .= ' locked';
 
-					$context['similar_topics'][] = array(
+					$context['similar_topics'][] = [
 						'id'         => $row['id_topic'],
-						'first_post' => array(
+						'first_post' => [
 							'id'        => $row['id_first_msg'],
-							'member'    => array(
+							'member'    => [
 								'username' => $row['first_member_name'],
 								'name'     => $row['first_display_name'],
 								'id'       => $row['first_id_member'],
 								'href'     => !empty($row['first_id_member']) ? $scripturl . '?action=profile;u=' . $row['first_id_member'] : '',
-								'link'     => !empty($row['first_id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['first_id_member'] . '" title="' . (isset($txt['profile_of']) ? ($txt['profile_of'] . ' ' . $row['first_display_name']) : sprintf($txt['view_profile_of_username'], $row['first_display_name'])) . '" class="preview">' . $row['first_display_name'] . '</a>': $row['first_display_name']
-							),
+								'link'     => !empty($row['first_id_member'])
+									? '<a href="' . $scripturl . '?action=profile;u=' . $row['first_id_member'] . '" title="' . (isset($txt['profile_of'])
+										? ($txt['profile_of'] . ' ' . $row['first_display_name'])
+										: sprintf($txt['view_profile_of_username'], $row['first_display_name'])
+									) . '" class="preview">' . $row['first_display_name'] . '</a>'
+									: $row['first_display_name']
+							],
 							'time'      => timeformat($row['first_poster_time']),
 							'subject'   => $row['first_subject'],
 							'preview'   => $row['first_body'],
 							'icon_url'  => $settings[$context['icon_sources'][$row['first_icon']]] . '/post/' . $row['first_icon'] . '.png',
 							'link'      => '<a itemprop="relatedLink" href="' . $scripturl . '?topic=' . $row['id_topic'] . '.0">' . $row['first_subject'] . '</a>',
 							'board'     => empty($modSettings['simtopics_only_cur_board']) ? '<a href="' . $scripturl . '?board=' . $row['id_board'] . '.0">' . $row['name'] . '</a>' : '',
-						),
-						'last_post' => array(
+						],
+						'last_post' => [
 							'id'        => $row['id_last_msg'],
-							'member'    => array(
+							'member'    => [
 								'username' => $row['last_member_name'],
 								'name'     => $row['last_display_name'],
 								'id'       => $row['last_id_member'],
 								'href'     => !empty($row['last_id_member']) ? $scripturl . '?action=profile;u=' . $row['last_id_member'] : '',
-								'link'     => !empty($row['last_id_member']) ? '<a href="' . $scripturl . '?action=profile;u=' . $row['last_id_member'] . '">' . $row['last_display_name'] . '</a>' : $row['last_display_name']
-							),
+								'link'     => !empty($row['last_id_member'])
+									? '<a href="' . $scripturl . '?action=profile;u=' . $row['last_id_member'] . '">' . $row['last_display_name'] . '</a>'
+									: $row['last_display_name']
+							],
 							'time'      => timeformat($row['last_poster_time']),
 							'subject'   => $row['last_subject'],
 							'preview'   => $row['last_body'],
-							'href'      => $scripturl . '?topic=' . $row['id_topic'] . ($user_info['is_guest'] ? ('.' . (!empty($options['view_newest_first']) ? 0 : ((int) (($row['num_replies']) / $context['pageindex_multiplier'])) * $context['pageindex_multiplier']) . '#msg' . $row['id_last_msg']) : (($row['num_replies'] == 0 ? '.0' : '.msg' . $row['id_last_msg']) . '#new')),
-						),
+							'href'      => $scripturl . '?topic=' . $row['id_topic'] . ($user_info['is_guest']
+									? ('.' . (!empty($options['view_newest_first']) ? 0 : ((int) (($row['num_replies']) / $context['pageindex_multiplier'])) * $context['pageindex_multiplier']) . '#msg' . $row['id_last_msg'])
+									: (($row['num_replies'] == 0 ? '.0' : '.msg' . $row['id_last_msg']) . '#new')
+								),
+						],
 						'is_sticky'   => !empty($row['is_sticky']),
 						'is_locked'   => !empty($row['locked']),
 						'is_redirect' => !empty($row['id_redirect_topic']),
@@ -358,7 +369,7 @@ final class SimTopics
 						'views'       => $row['num_views'],
 						'replies'     => $row['num_replies'],
 						'css_class'   => $colorClass
-					);
+					];
 				}
 
 				$smcFunc['db_free_result']($request);
@@ -384,30 +395,30 @@ final class SimTopics
 		}
 	}
 
-	public function loadPermissions(array &$permissionGroups, array &$permissionList)
+	public function loadPermissions(array &$permissionGroups, array &$permissionList): void
 	{
-		$permissionGroups['membergroup']['simple'] = array('simtopics');
-		$permissionGroups['membergroup']['classic'] = array('simtopics');
+		$permissionGroups['membergroup']['simple'] = ['simtopics'];
+		$permissionGroups['membergroup']['classic'] = ['simtopics'];
 
-		$permissionList['membergroup']['simtopics_view'] = array(false, 'simtopics', 'simtopics');
-		$permissionList['membergroup']['simtopics_post'] = array(false, 'simtopics', 'simtopics');
+		$permissionList['membergroup']['simtopics_view'] = [false, 'simtopics', 'simtopics'];
+		$permissionList['membergroup']['simtopics_post'] = [false, 'simtopics', 'simtopics'];
 	}
 
-	public function adminAreas(array &$admin_areas)
+	public function adminAreas(array &$admin_areas): void
 	{
 		global $txt;
 
-		$admin_areas['config']['areas']['modsettings']['subsections']['simtopics'] = array($txt['similar_topics']);
+		$admin_areas['config']['areas']['modsettings']['subsections']['simtopics'] = [$txt['similar_topics']];
 	}
 
-	public function adminSearch(array &$language_files, array &$include_files, array &$settings_search)
+	public function adminSearch(array $language_files, array $include_files, array &$settings_search): void
 	{
-		$settings_search[] = array(array($this, 'settings'), 'area=modsettings;sa=simtopics');
+		$settings_search[] = [[$this, 'settings'], 'area=modsettings;sa=simtopics'];
 	}
 
-	public function modifyModifications(array &$subActions)
+	public function modifyModifications(array &$subActions): void
 	{
-		$subActions['simtopics'] = array($this, 'settings');
+		$subActions['simtopics'] = [$this, 'settings'];
 	}
 
 	/**
@@ -423,21 +434,21 @@ final class SimTopics
 		$context['settings_title'] = $txt['settings'];
 		$context['post_url']       = $scripturl . '?action=admin;area=modsettings;save;sa=simtopics';
 
-		$config_vars = array(
-			array('int', 'simtopics_num_topics', 'subtext' => $txt['simtopics_nt_desc']),
-			array('check', 'simtopics_only_cur_board', 'subtext' => $txt['simtopics_ocb_desc']),
-			array('select', 'simtopics_when_new_topic', $txt['simtopics_when_new_topic_variants']),
-			array('check', 'simtopics_on_display'),
-			array('select', 'simtopics_position', $txt['simtopics_position_variants']),
-			array('select', 'simtopics_sorting', $txt['simtopics_sorting_variants']),
-			array('int', 'simtopics_cache_int', 'postinput' => $txt['simtopics_ci_post']),
-			array('boards', 'simtopics_ignored_boards'),
-			array('title', 'edit_permissions'),
-			array('permissions', 'simtopics_view'),
-			array('permissions', 'simtopics_post'),
-			array('title', 'simtopics_displayed_columns'),
-			array('callback', 'displayed_columns')
-		);
+		$config_vars = [
+			['int', 'simtopics_num_topics', 'subtext' => $txt['simtopics_nt_desc']],
+			['check', 'simtopics_only_cur_board', 'subtext' => $txt['simtopics_ocb_desc']],
+			['select', 'simtopics_when_new_topic', $txt['simtopics_when_new_topic_variants']],
+			['check', 'simtopics_on_display'],
+			['select', 'simtopics_position', $txt['simtopics_position_variants']],
+			['select', 'simtopics_sorting', $txt['simtopics_sorting_variants']],
+			['int', 'simtopics_cache_int', 'postinput' => $txt['simtopics_ci_post']],
+			['boards', 'simtopics_ignored_boards'],
+			['title', 'edit_permissions'],
+			['permissions', 'simtopics_view'],
+			['permissions', 'simtopics_post'],
+			['title', 'simtopics_displayed_columns'],
+			['callback', 'displayed_columns']
+		];
 
 		if ($return_config)
 			return $config_vars;
@@ -460,28 +471,28 @@ final class SimTopics
 		prepareDBSettingContext($config_vars);
 	}
 
-	private function prepareColumns()
+	private function prepareColumns(): void
 	{
 		global $modSettings, $txt, $context;
 
 		$columns = smf_json_decode($modSettings['simtopics_displayed_columns'] ?? '', true);
 
-		$protect_columns = array(2);
+		$protect_columns = [2];
 
-		$column_values = array(
+		$column_values = [
 			$txt['current_icon'],
 			$txt['title'] . ' / ' . $txt['board'],
 			$txt['replies'] . ' / ' . $txt['views'],
 			$txt['latest_post']
-		);
+		];
 
 		$i = 1;
 		foreach ($column_values as $value) {
-			$context['simtopics_displayed_columns'][$i] = array(
+			$context['simtopics_displayed_columns'][$i] = [
 				'id'      => $i,
 				'name'    => $value,
 				'protect' => in_array($i, $protect_columns)
-			);
+			];
 			$i++;
 		}
 
