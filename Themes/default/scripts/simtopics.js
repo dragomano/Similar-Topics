@@ -5,16 +5,17 @@
     tlist.innerHTML =
       '<div class="infobox" style="margin-bottom: -10px">' + ajax_notification_text + '</div>';
 
+    const params = new URLSearchParams({
+        query: document.querySelector('input[name="subject"]').value,
+        board: simOpt.cur_board,
+    });
+
     fetch(smf_scripturl + '?action=post', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
       },
-      body:
-        'query=' +
-        encodeURIComponent(document.querySelector('input[name="subject"]').value) +
-        '&board=' +
-        simOpt.cur_board,
+      body: params.toString(),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -42,13 +43,7 @@
 
                 if (topic.id_author !== 0)
                   topic_author =
-                    ' <a href="' +
-                    smf_scripturl +
-                    '?action=profile;u=' +
-                    topic.id_author +
-                    '">' +
-                    topic.author +
-                    '</a>';
+                    ' <a href="' + smf_scripturl + '?action=profile;u=' + topic.id_author + '">' + topic.author + '</a>';
 
                 tlist.innerHTML +=
                   '<div class="' +
@@ -99,11 +94,9 @@
 
   get_simtopics();
 
-  document.querySelector('input[name="subject"]').addEventListener('keyup', function () {
+  document.querySelector('input[name="subject"]').addEventListener('blur', function () {
     if (this.value.length < 1) return true;
 
-    let timer;
-    clearTimeout(timer);
-    timer = setTimeout(() => get_simtopics(), 1800);
+    get_simtopics();
   });
 })();

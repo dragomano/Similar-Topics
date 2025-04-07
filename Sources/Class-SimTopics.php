@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Class-SimTopics.php
@@ -6,13 +6,13 @@
  * @package Similar Topics
  * @link https://dragomano.ru/mods/similar-topics
  * @author Bugo <bugo@dragomano.ru>
- * @copyright 2012-2024 Bugo
+ * @copyright 2012-2025 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
  * @version 1.3.1
  */
 
-if (!defined('SMF'))
+if (! defined('SMF'))
 	die('No direct access...');
 
 final class SimTopics
@@ -40,23 +40,27 @@ final class SimTopics
 			return;
 
 		$context['simtopics_ignored_boards'] = [];
-		if (!empty($modSettings['simtopics_ignored_boards']))
+		if (! empty($modSettings['simtopics_ignored_boards'])) {
 			$context['simtopics_ignored_boards'] = explode(',', $modSettings['simtopics_ignored_boards']);
+		}
 
-		if (!empty($modSettings['recycle_board']))
+		if (! empty($modSettings['recycle_board'])) {
 			$context['simtopics_ignored_boards'][] = $modSettings['recycle_board'];
+		}
 
 		if (isset($context['current_board']) && in_array($context['current_board'], $context['simtopics_ignored_boards']))
 			return;
 
-		if (!empty($context['current_topic']) && !empty($modSettings['simtopics_on_display']))
+		if (! empty($context['current_topic']) && ! empty($modSettings['simtopics_on_display'])) {
 			$this->checkTopicsOnDisplay();
+		}
 
 		$this->prepareColumns();
 
-		if (allowedTo('simtopics_post') && !empty($context['is_new_topic']) && !empty($modSettings['simtopics_when_new_topic'])) {
-			if (isset($_POST['query']))
+		if (allowedTo('simtopics_post') && ! empty($context['is_new_topic']) && ! empty($modSettings['simtopics_when_new_topic'])) {
+			if (isset($_POST['query'])) {
 				$this->checkTopicsOnPost();
+			}
 
 			$context['insert_after_template'] .= /** @lang text */
 				'
@@ -80,34 +84,26 @@ final class SimTopics
 	{
 		global $smcFunc, $db_type;
 
-		// Удаляем все знаки препинания
 		$correct_title = preg_replace('/\p{P}+/u', '', $title);
-
-		// Удаляем лишние пробелы
 		$correct_title = preg_replace('/\s+/i', ' ', $correct_title);
-
-		// Удаляем все слова короче 3 символов
 		$correct_title = array_filter(explode(' ', $correct_title), function ($word) use ($smcFunc) {
 			return $smcFunc['strlen']($word) > 2;
 		});
 
 		if ($db_type === 'postgresql') {
-			// Переводим массив в строку с разделителем «|» между словами (означает «ИЛИ»; если нужно «И» - поставить «&»)
 			$correct_title = trim(urldecode(implode(' | ', array_filter($correct_title))));
 		} else {
-			// Преобразуем массив в строку для использования в запросе MATCH AGAINST
 			$correct_title = trim(urldecode(implode('* ', $correct_title))) . '*';
 		}
 
 		return $smcFunc['strtolower']($correct_title);
 	}
 
-	/**
-	 * Поиск похожих тем при создании новой
-	 */
 	public function checkTopicsOnPost(): void
 	{
 		global $smcFunc, $txt, $db_connection, $db_type, $modSettings, $context;
+
+		header('Content-Type: application/json; charset=utf-8');
 
 		$output = [
 			'msg'    => '',
@@ -122,13 +118,14 @@ final class SimTopics
 		if (empty($query)) {
 			$output['msg']   = $txt['simtopics_no_subject'];
 			$output['error'] = true;
+
 			exit(json_encode($output));
 		} else {
 			$search_string = $smcFunc['db_escape_string'](implode(' ', $query), $db_connection);
 			$title = $this->getCorrectTitle($search_string);
 		}
 
-		if (!empty($count) && !empty(ltrim($title, '*'))) {
+		if (! empty($count) && ! empty(ltrim($title, '*'))) {
 			db_extend('search');
 
 			$result = $smcFunc['db_query']('', '
@@ -141,8 +138,8 @@ final class SimTopics
 					LEFT JOIN {db_prefix}messages AS m ON m.id_topic = t.id_topic
 					LEFT JOIN {db_prefix}boards AS b ON b.id_board = t.id_board
 					LEFT JOIN {db_prefix}messages AS mf ON mf.id_msg = t.id_first_msg
-				WHERE m.approved = {int:is_active}' . (!empty($modSettings['simtopics_only_cur_board']) ? '
-					AND t.id_board = {int:current_board}' : '') . (!empty($context['simtopics_ignored_boards']) ? '
+				WHERE m.approved = {int:is_active}' . (! empty($modSettings['simtopics_only_cur_board']) ? '
+					AND t.id_board = {int:current_board}' : '') . (! empty($context['simtopics_ignored_boards']) ? '
 					AND b.id_board NOT IN ({array_int:ignore_boards})' : '') . '
 					AND {query_wanna_see_board}
 					AND {query_see_board}' . ($db_type === 'postgresql' ? '
@@ -155,14 +152,15 @@ final class SimTopics
 					'title'         => $title,
 					'is_active'     => 1,
 					'current_board' => $board,
-					'ignore_boards' => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
-					'limit'         => !empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
+					'ignore_boards' => ! empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
+					'limit'         => ! empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
 				]
 			);
 
 			$topics = [];
-			while ($topic = $smcFunc['db_fetch_assoc']($result))
+			while ($topic = $smcFunc['db_fetch_assoc']($result)) {
 				$topics[$topic['id_topic']] = $topic;
+			}
 
 			$smcFunc['db_free_result']($result);
 
@@ -172,21 +170,18 @@ final class SimTopics
 		exit(json_encode($output));
 	}
 
-	/**
-	 * Поиск похожих тем внутри текущей темы
-	 */
 	public function checkTopicsOnDisplay(): void
 	{
 		global $context, $user_info, $modSettings, $options, $smcFunc, $db_type, $settings, $scripturl, $txt;
 
-		if (!allowedTo('simtopics_view') || isset($_REQUEST['xml']) || !empty($context['is_new_topic']) || empty($context['subject']))
+		if (! allowedTo('simtopics_view') || isset($_REQUEST['xml']) || ! empty($context['is_new_topic']) || empty($context['subject']))
 			return;
 
 		if (($context['similar_topics'] = cache_get_data('similar_topics-' . $context['current_topic'] . '-u' . $user_info['id'], $modSettings['simtopics_cache_int'])) == null) {
-			$context['pageindex_multiplier'] = empty($modSettings['disableCustomPerPage']) && !empty($options['messages_per_page']) ? $options['messages_per_page'] : $modSettings['defaultMaxMessages'];
+			$context['pageindex_multiplier'] = empty($modSettings['disableCustomPerPage']) && ! empty($options['messages_per_page']) ? $options['messages_per_page'] : $modSettings['defaultMaxMessages'];
 
 			$sort_type = 'score';
-			if (!empty($modSettings['simtopics_sorting'])) {
+			if (! empty($modSettings['simtopics_sorting'])) {
 				switch ($modSettings['simtopics_sorting']) {
 					case 1:
 						$sort_type = 'score DESC';
@@ -214,14 +209,14 @@ final class SimTopics
 
 			$title = $this->getCorrectTitle($context['subject']);
 
-			if (!empty(ltrim($title, '*'))) {
+			if (! empty(ltrim($title, '*'))) {
 				db_extend('search');
 
 				$request = $smcFunc['db_query']('substring', '
 					SELECT
 						t.id_topic, t.id_board, t.num_views, t.num_replies, t.is_sticky, t.locked, t.id_poll, t.id_first_msg, t.id_last_msg, t.id_redirect_topic, ml.subject AS last_subject, ml.id_member AS last_id_member, ml.poster_time AS last_poster_time, ml.id_msg_modified, ml.icon AS last_icon, ml.poster_name AS last_member_name,
 						mf.subject AS first_subject, mf.id_member AS first_id_member, COALESCE(memf.real_name, mf.poster_name) AS first_display_name, mf.poster_time AS first_poster_time, mf.icon AS first_icon, mf.poster_name AS first_member_name, b.name, ' . ($user_info['is_guest'] ? '0' : 'COALESCE(lt.id_msg, COALESCE(lmr.id_msg, -1)) + 1') . ' AS new_from,
-						COALESCE(meml.real_name, ml.poster_name) AS last_display_name, ' . (!empty($modSettings['preview_characters']) ? '
+						COALESCE(meml.real_name, ml.poster_name) AS last_display_name, ' . (! empty($modSettings['preview_characters']) ? '
 						SUBSTRING(ml.body, 1, ' . ($modSettings['preview_characters'] + 256) . ') AS last_body,
 						SUBSTRING(mf.body, 1, ' . ($modSettings['preview_characters'] + 256) . ') AS first_body,' : '') . 'ml.smileys_enabled AS last_smileys, mf.smileys_enabled AS first_smileys,' . ($db_type === 'postgresql' ? '
 						ts_rank_cd(to_tsvector(mf.subject), to_tsquery({string:language}, {string:title}))' : '
@@ -235,8 +230,8 @@ final class SimTopics
 						LEFT JOIN {db_prefix}log_topics AS lt ON (lt.id_topic = t.id_topic AND lt.id_member = {int:current_member})
 						LEFT JOIN {db_prefix}log_mark_read AS lmr ON (lmr.id_board = {int:current_board} AND lmr.id_member = {int:current_member})') . '
 					WHERE t.id_topic != {int:current_topic}
-						AND (t.approved = {int:is_approved}' . ($user_info['is_guest'] ? '' : ' OR t.id_member_started = {int:current_member}') . ')' . (!empty($modSettings['simtopics_only_cur_board']) ? '
-						AND t.id_board = {int:current_board}' : '') . (!empty($context['simtopics_ignored_boards']) ? '
+						AND (t.approved = {int:is_approved}' . ($user_info['is_guest'] ? '' : ' OR t.id_member_started = {int:current_member}') . ')' . (! empty($modSettings['simtopics_only_cur_board']) ? '
+						AND t.id_board = {int:current_board}' : '') . (! empty($context['simtopics_ignored_boards']) ? '
 						AND t.id_board NOT IN ({array_int:ignore_boards})' : '') . '
 						AND {query_wanna_see_board}
 						AND {query_see_board}' . ($db_type === 'postgresql' ? '
@@ -251,17 +246,18 @@ final class SimTopics
 						'current_board'  => $context['current_board'],
 						'is_approved'    => 1,
 						'current_member' => $user_info['id'],
-						'ignore_boards'  => !empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
+						'ignore_boards'  => ! empty($context['simtopics_ignored_boards']) ? $context['simtopics_ignored_boards'] : null,
 						'sort_type'      => $sort_type,
-						'limit'          => !empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
+						'limit'          => ! empty($modSettings['simtopics_num_topics']) ? $modSettings['simtopics_num_topics'] : 5
 					]
 				);
 
 				while ($row = $smcFunc['db_fetch_assoc']($request)) {
-					if (!empty($modSettings['preview_characters']))	{
+					if (! empty($modSettings['preview_characters']))	{
 						$row['first_body'] = strip_tags(strtr(parse_bbc($row['first_body'], $row['first_smileys'], $row['id_first_msg']), ['<br>' => '&#10;']));
-						if ($smcFunc['strlen']($row['first_body']) > $modSettings['preview_characters'])
+						if ($smcFunc['strlen']($row['first_body']) > $modSettings['preview_characters']) {
 							$row['first_body'] = $smcFunc['substr']($row['first_body'], 0, $modSettings['preview_characters']) . '...';
+						}
 
 						censorText($row['first_subject']);
 						censorText($row['first_body']);
@@ -271,8 +267,9 @@ final class SimTopics
 							$row['last_body']    = $row['first_body'];
 						} else {
 							$row['last_body'] = strip_tags(strtr(parse_bbc($row['last_body'], $row['last_smileys'], $row['id_last_msg']), ['<br>' => '&#10;']));
-							if ($smcFunc['strlen']($row['last_body']) > $modSettings['preview_characters'])
+							if ($smcFunc['strlen']($row['last_body']) > $modSettings['preview_characters']) {
 								$row['last_body'] = $smcFunc['substr']($row['last_body'], 0, $modSettings['preview_characters']) . '...';
+							}
 
 							censorText($row['last_subject']);
 							censorText($row['last_body']);
@@ -282,37 +279,48 @@ final class SimTopics
 						$row['last_body']  = '';
 						censorText($row['first_subject']);
 
-						if ($row['id_first_msg'] == $row['id_last_msg'])
+						if ($row['id_first_msg'] == $row['id_last_msg']) {
 							$row['last_subject'] = $row['first_subject'];
-						else
+						} else {
 							censorText($row['last_subject']);
+						}
 					}
 
 					if (empty($context['icon_sources'])) {
 						$context['icon_sources'] = [];
-						foreach ($context['stable_icons'] as $icon)
+
+						foreach ($context['stable_icons'] as $icon) {
 							$context['icon_sources'][$icon] = 'images_url';
+						}
 					}
 
-					if (!empty($modSettings['messageIconChecks_enable'])) {
-						if (!isset($context['icon_sources'][$row['first_icon']]))
+					if (! empty($modSettings['messageIconChecks_enable'])) {
+						if (! isset($context['icon_sources'][$row['first_icon']])) {
 							$context['icon_sources'][$row['first_icon']] = file_exists($settings['theme_dir'] . '/images/post/' . $row['first_icon'] . '.png') ? 'images_url' : 'default_images_url';
-						if (!isset($context['icon_sources'][$row['last_icon']]))
+						}
+
+						if (! isset($context['icon_sources'][$row['last_icon']])) {
 							$context['icon_sources'][$row['last_icon']] = file_exists($settings['theme_dir'] . '/images/post/' . $row['last_icon'] . '.png') ? 'images_url' : 'default_images_url';
+						}
 					} else {
-						if (!isset($context['icon_sources'][$row['first_icon']]))
+						if (! isset($context['icon_sources'][$row['first_icon']])) {
 							$context['icon_sources'][$row['first_icon']] = 'images_url';
-						if (!isset($context['icon_sources'][$row['last_icon']]))
+						}
+
+						if (! isset($context['icon_sources'][$row['last_icon']])) {
 							$context['icon_sources'][$row['last_icon']] = 'images_url';
+						}
 					}
 
 					$colorClass = 'windowbg';
 
-					if ($row['is_sticky'])
+					if ($row['is_sticky']) {
 						$colorClass .= ' sticky';
+					}
 
-					if ($row['locked'])
+					if ($row['locked']) {
 						$colorClass .= ' locked';
+					}
 
 					$context['similar_topics'][] = [
 						'id'         => $row['id_topic'],
@@ -322,8 +330,8 @@ final class SimTopics
 								'username' => $row['first_member_name'],
 								'name'     => $row['first_display_name'],
 								'id'       => $row['first_id_member'],
-								'href'     => !empty($row['first_id_member']) ? $scripturl . '?action=profile;u=' . $row['first_id_member'] : '',
-								'link'     => !empty($row['first_id_member'])
+								'href'     => ! empty($row['first_id_member']) ? $scripturl . '?action=profile;u=' . $row['first_id_member'] : '',
+								'link'     => ! empty($row['first_id_member'])
 									? '<a href="' . $scripturl . '?action=profile;u=' . $row['first_id_member'] . '" title="' . (isset($txt['profile_of'])
 										? ($txt['profile_of'] . ' ' . $row['first_display_name'])
 										: sprintf($txt['view_profile_of_username'], $row['first_display_name'])
@@ -343,8 +351,8 @@ final class SimTopics
 								'username' => $row['last_member_name'],
 								'name'     => $row['last_display_name'],
 								'id'       => $row['last_id_member'],
-								'href'     => !empty($row['last_id_member']) ? $scripturl . '?action=profile;u=' . $row['last_id_member'] : '',
-								'link'     => !empty($row['last_id_member'])
+								'href'     => ! empty($row['last_id_member']) ? $scripturl . '?action=profile;u=' . $row['last_id_member'] : '',
+								'link'     => ! empty($row['last_id_member'])
 									? '<a href="' . $scripturl . '?action=profile;u=' . $row['last_id_member'] . '">' . $row['last_display_name'] . '</a>'
 									: $row['last_display_name']
 							],
@@ -352,13 +360,13 @@ final class SimTopics
 							'subject'   => $row['last_subject'],
 							'preview'   => $row['last_body'],
 							'href'      => $scripturl . '?topic=' . $row['id_topic'] . ($user_info['is_guest']
-									? ('.' . (!empty($options['view_newest_first']) ? 0 : ((int) (($row['num_replies']) / $context['pageindex_multiplier'])) * $context['pageindex_multiplier']) . '#msg' . $row['id_last_msg'])
+									? ('.' . (! empty($options['view_newest_first']) ? 0 : ((int) (($row['num_replies']) / $context['pageindex_multiplier'])) * $context['pageindex_multiplier']) . '#msg' . $row['id_last_msg'])
 									: (($row['num_replies'] == 0 ? '.0' : '.msg' . $row['id_last_msg']) . '#new')
 								),
 						],
-						'is_sticky'   => !empty($row['is_sticky']),
-						'is_locked'   => !empty($row['locked']),
-						'is_redirect' => !empty($row['id_redirect_topic']),
+						'is_sticky'   => ! empty($row['is_sticky']),
+						'is_locked'   => ! empty($row['locked']),
+						'is_redirect' => ! empty($row['id_redirect_topic']),
 						'is_poll'     => $modSettings['pollMode'] == '1' && $row['id_poll'] > 0,
 						'icon'        => $row['first_icon'],
 						'icon_url'    => $settings[$context['icon_sources'][$row['first_icon']]] . '/post/' . $row['first_icon'] . '.png',
@@ -497,8 +505,9 @@ final class SimTopics
 		}
 
 		foreach ($context['simtopics_displayed_columns'] as $column) {
-			if (in_array($column['id'], $columns) || in_array($column['id'], $protect_columns))
+			if (in_array($column['id'], $columns) || in_array($column['id'], $protect_columns)) {
 				$context['simtopics_displayed_columns'][$column['id']]['show'] = true;
+			}
 		}
 	}
 }
