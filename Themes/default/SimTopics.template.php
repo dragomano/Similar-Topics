@@ -111,8 +111,9 @@ function template_callback_displayed_columns()
 	echo '
 		<ul class="half_content">';
 
+	$limit = (int) ceil(count($context['simtopics_displayed_columns']) / 2);
+
 	$i = 0;
-	$limit = ceil(count($context['simtopics_displayed_columns']) / 2);
 	foreach ($context['simtopics_displayed_columns'] as $column) {
 		if ($i === $limit)
 			echo '

@@ -6,10 +6,10 @@
  * @package Similar Topics
  * @link https://dragomano.ru/mods/similar-topics
  * @author Bugo <bugo@dragomano.ru>
- * @copyright 2012-2025 Bugo
+ * @copyright 2012-2026 Bugo
  * @license https://opensource.org/licenses/BSD-3-Clause BSD
  *
- * @version 1.3.2
+ * @version 1.3.3
  */
 
 if (! defined('SMF'))
@@ -19,12 +19,12 @@ final class SimTopics
 {
 	public function hooks(): void
 	{
-		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
-		add_integration_function('integrate_menu_buttons', __CLASS__ . '::menuButtons#', false, __FILE__);
-		add_integration_function('integrate_load_permissions', __CLASS__ . '::loadPermissions#', false, __FILE__);
-		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas#', false, __FILE__);
-		add_integration_function('integrate_admin_search', __CLASS__ . '::adminSearch#', false, __FILE__);
-		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false, __FILE__);
+		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false);
+		add_integration_function('integrate_menu_buttons', __CLASS__ . '::menuButtons#', false);
+		add_integration_function('integrate_load_permissions', __CLASS__ . '::loadPermissions#', false);
+		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas#', false);
+		add_integration_function('integrate_admin_search', __CLASS__ . '::adminSearch#', false);
+		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false);
 	}
 
 	public function loadTheme(): void
@@ -122,7 +122,7 @@ final class SimTopics
 			exit(json_encode($output));
 		} else {
 			$search_string = $smcFunc['db_escape_string'](implode(' ', $query), $db_connection);
-			$title = $this->getCorrectTitle($search_string);
+			$title         = $this->getCorrectTitle($search_string);
 		}
 
 		if (! empty($count) && ! empty(ltrim($title, '*'))) {
@@ -177,8 +177,12 @@ final class SimTopics
 		if (! allowedTo('simtopics_view') || isset($_REQUEST['xml']) || ! empty($context['is_new_topic']) || empty($context['subject']))
 			return;
 
-		if (($context['similar_topics'] = cache_get_data('similar_topics-' . $context['current_topic'] . '-u' . $user_info['id'], $modSettings['simtopics_cache_int'])) == null) {
-			$context['pageindex_multiplier'] = empty($modSettings['disableCustomPerPage']) && ! empty($options['messages_per_page']) ? $options['messages_per_page'] : $modSettings['defaultMaxMessages'];
+		$cacheKey = 'similar_topics-' . $context['current_topic'] . '-u' . $user_info['id'];
+
+		if (($context['similar_topics'] = cache_get_data($cacheKey, $modSettings['simtopics_cache_int'])) == null) {
+			$context['pageindex_multiplier'] = empty($modSettings['disableCustomPerPage']) && ! empty($options['messages_per_page'])
+				? $options['messages_per_page']
+				: $modSettings['defaultMaxMessages'];
 
 			$sort_type = 'score';
 			if (! empty($modSettings['simtopics_sorting'])) {
@@ -277,6 +281,7 @@ final class SimTopics
 					} else {
 						$row['first_body'] = '';
 						$row['last_body']  = '';
+
 						censorText($row['first_subject']);
 
 						if ($row['id_first_msg'] == $row['id_last_msg']) {
@@ -385,7 +390,7 @@ final class SimTopics
 				$context['similar_topics'] = [];
 			}
 
-			cache_put_data('similar_topics-' . $context['current_topic'] . '-u' . $user_info['id'], $context['similar_topics'], $modSettings['simtopics_cache_int']);
+			cache_put_data($cacheKey, $context['similar_topics'], $modSettings['simtopics_cache_int']);
 		}
 
 		loadTemplate('SimTopics');
@@ -458,8 +463,9 @@ final class SimTopics
 			['callback', 'displayed_columns']
 		];
 
-		if ($return_config)
+		if ($return_config) {
 			return $config_vars;
+		}
 
 		$context[$context['admin_menu_name']]['tab_data']['description'] = $txt['simtopics_desc'];
 
@@ -469,7 +475,7 @@ final class SimTopics
 
 			$_POST['simtopics_displayed_columns'] = $columns = $_POST['displayed_column'] ?? [];
 
-			$save_vars = $config_vars;
+			$save_vars   = $config_vars;
 			$save_vars[] = ['select', 'simtopics_displayed_columns', $columns, 'multiple' => true];
 
 			saveDBSettings($save_vars);
