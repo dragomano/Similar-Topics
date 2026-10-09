@@ -1,7 +1,7 @@
 <?php
 
 $txt['similar_topics'] = 'Similar topics';
-$txt['simtopics_desc'] = 'Here you can change settings of the Similar Topics mod. You can also buy <a class="bbc_link" href="https://ko-fi.com/dragomano/">a cup of coffee</a> for the developer.';
+$txt['simtopics_desc'] = 'Here you can change settings of the Similar Topics mod. You can also <a class="bbc_link" href="https://app.lava.top/dragomano?tabId=donate">support the developer</a>.';
 $txt['simtopics_settings'] = 'Similar Topics - Settings';
 $txt['simtopics_num_topics'] = 'Maximum topics to show';
 $txt['simtopics_nt_desc'] = 'Set 0 to disable mod.';
